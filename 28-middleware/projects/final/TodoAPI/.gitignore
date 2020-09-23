@@ -1,0 +1,4 @@
+*.xcodeproj
+Package.resolved
+DerivedData
+

@@ -1,0 +1,7 @@
+#set("content") {
+  <h1>#(user.name)</h1>
+  <h2>#(user.username)</h2>
+  #embed("acronymsTable")
+}
+
+#embed("base")

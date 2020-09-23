@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Didot.ttc">
+            <string>Didot-Bold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HomeViewController" customModule="LocationTrackPhone" customModuleProvider="target">
+            <connections>
+                <outlet property="activityIndicator" destination="M7g-mt-Kfh" id="3Mv-nf-Nb2"/>
+                <outlet property="followButton" destination="miP-fS-NSk" id="l3a-tu-hI2"/>
+                <outlet property="shareButton" destination="Cos-yR-V6s" id="CQD-W8-4vz"/>
+                <outlet property="view" destination="wo5-RB-MfB" id="0jI-FX-hnR"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="wo5-RB-MfB">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="miP-fS-NSk">
+                    <rect key="frame" x="20" y="311.5" width="335" height="271.5"/>
+                    <color key="backgroundColor" red="0.85153891569999995" green="0.90054242230000003" blue="0.88746877319999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                    <fontDescription key="fontDescription" name="Didot-Bold" family="Didot" pointSize="27"/>
+                    <state key="normal" title="FOLLOW">
+                        <color key="titleColor" red="0.02856170718" green="0.017844443830000001" blue="0.029165317360000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                    </state>
+                    <connections>
+                        <action selector="didPressFollowButton:" destination="-1" eventType="touchUpInside" id="XAI-Mc-3pg"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cos-yR-V6s">
+                    <rect key="frame" x="20" y="20" width="335" height="271.5"/>
+                    <color key="backgroundColor" red="0.85153891569999995" green="0.90054242230000003" blue="0.88746877319999995" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                    <fontDescription key="fontDescription" name="Didot-Bold" family="Didot" pointSize="27"/>
+                    <state key="normal" title="SHARE">
+                        <color key="titleColor" red="0.02856170718" green="0.017844443830000001" blue="0.029165317360000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                    </state>
+                    <connections>
+                        <action selector="didPressShareButton:" destination="-1" eventType="touchUpInside" id="L51-VU-bTf"/>
+                    </connections>
+                </button>
+                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="M7g-mt-Kfh">
+                    <rect key="frame" x="169" y="283" width="37" height="37"/>
+                    <color key="color" red="0.66974632020000002" green="0.92115807549999995" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                </activityIndicatorView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="1w9-bz-Qec" firstAttribute="trailing" secondItem="Cos-yR-V6s" secondAttribute="trailing" constant="20" id="7JA-mC-dfp"/>
+                <constraint firstItem="1w9-bz-Qec" firstAttribute="trailing" secondItem="miP-fS-NSk" secondAttribute="trailing" constant="20" id="L6n-Aw-RSf"/>
+                <constraint firstItem="M7g-mt-Kfh" firstAttribute="centerY" secondItem="1w9-bz-Qec" secondAttribute="centerY" id="SNc-yJ-1PR"/>
+                <constraint firstItem="M7g-mt-Kfh" firstAttribute="centerX" secondItem="1w9-bz-Qec" secondAttribute="centerX" id="SQ1-t7-WQB"/>
+                <constraint firstItem="Cos-yR-V6s" firstAttribute="top" secondItem="1w9-bz-Qec" secondAttribute="top" constant="20" id="VWm-Lg-izi"/>
+                <constraint firstItem="miP-fS-NSk" firstAttribute="top" secondItem="Cos-yR-V6s" secondAttribute="bottom" constant="20" id="Ya7-HQ-rRT"/>
+                <constraint firstItem="1w9-bz-Qec" firstAttribute="bottom" secondItem="miP-fS-NSk" secondAttribute="bottom" constant="20" id="gBg-C0-3lB"/>
+                <constraint firstItem="miP-fS-NSk" firstAttribute="leading" secondItem="1w9-bz-Qec" secondAttribute="leading" constant="20" id="jPT-nN-G1h"/>
+                <constraint firstItem="miP-fS-NSk" firstAttribute="height" secondItem="Cos-yR-V6s" secondAttribute="height" id="kFS-gj-88D"/>
+                <constraint firstItem="Cos-yR-V6s" firstAttribute="leading" secondItem="1w9-bz-Qec" secondAttribute="leading" constant="20" id="nlK-lX-rlU"/>
+            </constraints>
+            <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" translucent="NO" prompted="NO"/>
+            <viewLayoutGuide key="safeArea" id="1w9-bz-Qec"/>
+        </view>
+    </objects>
+</document>

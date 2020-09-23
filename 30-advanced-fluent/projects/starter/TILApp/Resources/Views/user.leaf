@@ -1,0 +1,19 @@
+#set("content") {
+
+  #if(user.profilePicture) {
+    <img src="/users/#(user.id)/profilePicture" alt="#(user.name)">
+  }
+
+  <h1>#(user.name)</h1>
+  <h2>#(user.username)</h2>
+
+  #if(authenticatedUser) {
+    <a href="/users/#(user.id)/addProfilePicture">
+      #if(user.profilePicture){Update } else{Add } Profile Picture
+    </a>
+  }
+
+  #embed("acronymsTable")
+}
+
+#embed("base")

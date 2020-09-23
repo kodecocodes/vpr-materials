@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Didot.ttc">
+            <string>Didot</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ShareViewController" customModule="LocationTrackPhone" customModuleProvider="target">
+            <connections>
+                <outlet property="mapView" destination="qao-pA-Uwg" id="jPn-5M-iay"/>
+                <outlet property="sessionButton" destination="OrR-f6-G2f" id="0dH-Op-tM0"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" zoomEnabled="NO" scrollEnabled="NO" rotateEnabled="NO" pitchEnabled="NO" showsUserLocation="YES" showsBuildings="NO" showsCompass="NO" showsPointsOfInterest="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qao-pA-Uwg">
+                    <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                </mapView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OrR-f6-G2f">
+                    <rect key="frame" x="20" y="587" width="335" height="60"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="60" id="N3J-kC-IRU"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name="Didot" family="Didot" pointSize="15"/>
+                    <state key="normal" title="Button">
+                        <color key="titleColor" red="0.02856170718" green="0.017844443830000001" blue="0.029165317360000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                    </state>
+                    <connections>
+                        <action selector="didPressSessionButton:" destination="-1" eventType="touchUpInside" id="YtA-9Q-Nr7"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="0.66974632020000002" green="0.92115807549999995" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <constraints>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="OrR-f6-G2f" secondAttribute="trailing" constant="20" id="2h3-fq-m5p"/>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="bottom" secondItem="qao-pA-Uwg" secondAttribute="bottom" id="5sd-ah-fel"/>
+                <constraint firstItem="OrR-f6-G2f" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="DnC-uy-nby"/>
+                <constraint firstItem="qao-pA-Uwg" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" id="aD1-Wq-d7a"/>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="bottom" secondItem="OrR-f6-G2f" secondAttribute="bottom" constant="20" id="crc-ls-U79"/>
+                <constraint firstItem="qao-pA-Uwg" firstAttribute="top" secondItem="fnl-2z-Ty3" secondAttribute="top" id="jwo-1p-LFh"/>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="qao-pA-Uwg" secondAttribute="trailing" id="uoW-0M-FaT"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="fnl-2z-Ty3"/>
+        </view>
+    </objects>
+</document>
