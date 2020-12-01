@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,28 +26,28 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Foundation
+import Fluent
 import Vapor
-import FluentPostgreSQL
 
-final class User: Codable {
+final class User: Model, Content {
+  static let schema = "users"
+  
+  @ID
   var id: UUID?
+  
+  @Field(key: "name")
   var name: String
+  
+  @Field(key: "username")
   var username: String
-
-  init(name: String, username: String) {
+  
+  @Children(for: \.$user)
+  var acronyms: [Acronym]
+  
+  init() {}
+  
+  init(id: UUID? = nil, name: String, username: String) {
     self.name = name
     self.username = username
-  }
-}
-
-extension User: PostgreSQLUUIDModel {}
-extension User: Content {}
-extension User: Migration {}
-extension User: Parameter {}
-
-extension User {
-  var acronyms: Children<User, Acronym> {
-    return children(\.userID)
   }
 }

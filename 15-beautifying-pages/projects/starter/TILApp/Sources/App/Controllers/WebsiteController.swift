@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,27 +27,27 @@
 /// THE SOFTWARE.
 
 import Vapor
-import Leaf
 
 struct WebsiteController: RouteCollection {
-  func boot(router: Router) throws {
-    router.get(use: indexHandler)
-    router.get("acronyms", Acronym.parameter, use: acronymHandler)
+
+  func boot(routes: RoutesBuilder) throws {
+    routes.get(use: indexHandler)
+    routes.get("acronyms", ":acronymID", use: acronymHandler)
   }
 
-  func indexHandler(_ req: Request) throws -> Future<View> {
-    return Acronym.query(on: req).all().flatMap(to: View.self) { acronyms in
+  func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
+    Acronym.query(on: req.db).all().flatMap { acronyms in
       let acronymsData = acronyms.isEmpty ? nil : acronyms
       let context = IndexContext(title: "Home page", acronyms: acronymsData)
-      return try req.view().render("index", context)
+      return req.view.render("index", context)
     }
   }
 
-  func acronymHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(Acronym.self).flatMap(to: View.self) { acronym in
-      return acronym.user.get(on: req).flatMap(to: View.self) { user in
+  func acronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
+      acronym.$user.get(on: req.db).flatMap { user in
         let context = AcronymContext(title: acronym.short, acronym: acronym, user: user)
-        return try req.view().render("acronym", context)
+        return req.view.render("acronym", context)
       }
     }
   }
