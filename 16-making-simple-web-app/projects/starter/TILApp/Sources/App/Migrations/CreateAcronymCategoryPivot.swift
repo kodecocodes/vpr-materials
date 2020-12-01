@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import App
-import XCTest
+import Fluent
 
-final class AppTests: XCTestCase {
-    func testNothing() throws {
-        // add your tests here
-        XCTAssert(true)
-    }
-
-    static let allTests = [
-        ("testNothing", testNothing)
-    ]
+struct CreateAcronymCategoryPivot: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("acronym-category-pivot")
+      .id()
+      .field("acronymID", .uuid, .required, .references("acronyms", "id", onDelete: .cascade))
+      .field("categoryID", .uuid, .required, .references("categories", "id", onDelete: .cascade))
+      .create()
+  }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("acronym-category-pivot").delete()
+  }
 }
