@@ -69,8 +69,6 @@ public func configure(_ app: Application) throws {
 
   app.views.use(.leaf)
 
-  app.leaf.cache.isEnabled = false
-  
   // register routes
   try routes(app)
 }
