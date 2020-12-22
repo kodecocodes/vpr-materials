@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -35,18 +35,19 @@ enum AuthResult {
 }
 
 class Auth {
-  static let defaultsKey = "TIL-API-KEY"
-  let defaults = UserDefaults.standard
+  static let keychainKey = "TIL-API-KEY"
 
   var token: String? {
     get {
-      return defaults.string(forKey: Auth.defaultsKey)
+      Keychain.load(key: Auth.keychainKey)
     }
     set {
-      defaults.set(newValue, forKey: Auth.defaultsKey)
+      if let newToken = newValue {
+        Keychain.save(key: Auth.keychainKey, data: newToken)
+      }
     }
   }
-  
+
   func logout() {
   }
 }

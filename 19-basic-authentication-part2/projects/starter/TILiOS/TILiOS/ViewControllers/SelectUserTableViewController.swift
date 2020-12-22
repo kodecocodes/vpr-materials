@@ -1,15 +1,15 @@
 /// Copyright (c) 2019 Razeware LLC
-///
+/// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
 /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the Software is
 /// furnished to do so, subject to the following conditions:
-///
+/// 
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
-///
+/// 
 /// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
 /// distribute, sublicense, create a derivative work, and/or sell copies of the
 /// Software in any work that is designed, intended, or marketed for pedagogical or
@@ -17,7 +17,7 @@
 /// or information technology.  Permission for such use, copying, modification,
 /// merger, publication, distribution, sublicensing, creation of derivative works,
 /// or sale is expressly withheld.
-///
+/// 
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,20 +28,18 @@
 
 import UIKit
 
-class AddToCategoryTableViewController: UITableViewController {
+class SelectUserTableViewController: UITableViewController {
   // MARK: - Properties
-  private var categories: [Category] = []
-  private let selectedCategories: [Category]
-  private let acronym: Acronym
+  var users: [User] = []
+  var selectedUser: User
 
-  // MARK: - Initialization
+  // MARK: - Initializers
   required init?(coder: NSCoder) {
     fatalError("init(coder:) is not implemented")
   }
 
-  init?(coder: NSCoder, acronym: Acronym, selectedCategories: [Category]) {
-    self.acronym = acronym
-    self.selectedCategories = selectedCategories
+  init?(coder: NSCoder, selectedUser: User) {
+    self.selectedUser = selectedUser
     super.init(coder: coder)
   }
 
@@ -52,77 +50,53 @@ class AddToCategoryTableViewController: UITableViewController {
   }
 
   func loadData() {
-    let categoriesRequest = ResourceRequest<Category>(resourcePath: "categories")
-    categoriesRequest.getAll { [weak self] result in
+    let usersRequest = ResourceRequest<User>(resourcePath: "users")
+
+    usersRequest.getAll { [weak self] result in
       switch result {
       case .failure:
-        let message = "There was an error getting the categories"
-        ErrorPresenter.showError(message: message, on: self)
-      case .success(let categories):
-        self?.categories = categories
+        let message = "There was an error getting the users"
+        ErrorPresenter.showError(message: message, on: self) { _ in
+          self?.navigationController?.popViewController(animated: true)
+        }
+      case .success(let users):
+        self?.users = users
         DispatchQueue.main.async { [weak self] in
           self?.tableView.reloadData()
         }
       }
     }
   }
+
+  // MARK: - Navigation
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    if segue.identifier == "UnwindSelectUserSegue" {
+      guard
+        let cell = sender as? UITableViewCell,
+        let indexPath = tableView.indexPath(for: cell)
+        else {
+          return
+      }
+      selectedUser = users[indexPath.row]
+    }
+  }
 }
 
 // MARK: - UITableViewDataSource
-extension AddToCategoryTableViewController {
+extension SelectUserTableViewController {
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return categories.count
+    return users.count
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let category = categories[indexPath.row]
-
-    let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-    cell.textLabel?.text = category.name
-
-    let isSelected = selectedCategories.contains { element in
-      element.name == category.name
-    }
-
-    if isSelected {
+    let user = users[indexPath.row]
+    let cell = tableView.dequeueReusableCell(withIdentifier: "SelectUserCell", for: indexPath)
+    cell.textLabel?.text = user.name
+    if user.name == selectedUser.name {
       cell.accessoryType = .checkmark
+    } else {
+      cell.accessoryType = .none
     }
-
     return cell
-  }
-}
-
-// MARK: - UITableViewDelegate
-extension AddToCategoryTableViewController {
-  override func tableView(
-    _ tableView: UITableView,
-    didSelectRowAt indexPath: IndexPath
-  ) {
-    let category = categories[indexPath.row]
-    guard let acronymID = acronym.id else {
-      let message = """
-        There was an error adding the acronym
-        to the category - the acronym has no ID
-        """
-      ErrorPresenter.showError(message: message, on: self)
-      return
-    }
-    let acronymRequest = AcronymRequest(acronymID: acronymID)
-    acronymRequest
-      .add(category: category) { [weak self] result in
-        switch result {
-        case .success:
-          DispatchQueue.main.async { [weak self] in
-            self?.navigationController?
-              .popViewController(animated: true)
-          }
-        case .failure:
-          let message = """
-            There was an error adding the acronym
-            to the category
-            """
-          ErrorPresenter.showError(message: message, on: self)
-        }
-      }
   }
 }

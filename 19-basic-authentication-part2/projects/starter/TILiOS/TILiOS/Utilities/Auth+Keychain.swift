@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,47 +26,44 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Security
 import UIKit
 
-class CreateUserTableViewController: UITableViewController {
-  // MARK: - IBOutlets
-  @IBOutlet weak var nameTextField: UITextField!
-  @IBOutlet weak var usernameTextField: UITextField!
+enum Keychain {
+  @discardableResult
+  static func save(key: String, data: String) -> OSStatus {
+    let bytes: [UInt8] = .init(data.utf8)
+    let bytesAsData = Data(bytes)
+    let query = [
+      kSecClass as String: kSecClassKey as String,
+      kSecAttrAccount as String: key,
+      kSecValueData as String: bytesAsData
+    ] as [String: Any]
 
-  // MARK: - View Life Cycle
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    nameTextField.becomeFirstResponder()
+    SecItemDelete(query as CFDictionary)
+
+    return SecItemAdd(query as CFDictionary, nil)
   }
 
-  // MARK: - IBActions
-  @IBAction func cancel(_ sender: Any) {
-    navigationController?.popViewController(animated: true)
-  }
+  static func load(key: String) -> String? {
+    let query = [
+      kSecClass as String: kSecClassKey,
+      kSecAttrAccount as String: key,
+      kSecReturnData as String: kCFBooleanTrue as Any,
+      kSecMatchLimit as String: kSecMatchLimitOne
+    ] as [String: Any]
 
-  @IBAction func save(_ sender: Any) {
-    guard let name = nameTextField.text, !name.isEmpty else {
-      ErrorPresenter.showError(message: "You must specify a name", on: self)
-      return
-    }
+    var dataTypeRef: AnyObject?
 
-    guard let username = usernameTextField.text, !username.isEmpty else {
-      ErrorPresenter.showError(message: "You must specify a username", on: self)
-      return
-    }
+    let status: OSStatus = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
 
-    let user = User(name: name, username: username)
-    ResourceRequest<User>(resourcePath: "users").save(user) { [weak self] result in
-      switch result {
-      case .failure:
-        let message = "There was a problem saving the user"
-        ErrorPresenter.showError(message: message, on: self)
-      case .success:
-        DispatchQueue.main.async { [weak self] in
-          self?.navigationController?
-            .popViewController(animated: true)
-        }
+    if status == noErr {
+      guard let data = dataTypeRef as? Data else {
+        return nil
       }
+      return String(decoding: data, as: UTF8.self)
+    } else {
+      return nil
     }
   }
 }
