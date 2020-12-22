@@ -35,10 +35,10 @@ enum Keychain {
     let bytes: [UInt8] = .init(data.utf8)
     let bytesAsData = Data(bytes)
     let query = [
-      kSecClass as String: kSecClassKey as String,
-      kSecAttrAccount as String: key,
-      kSecValueData as String: bytesAsData
-    ] as [String: Any]
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key,
+      kSecValueData: bytesAsData
+    ] as [CFString: Any]
 
     SecItemDelete(query as CFDictionary)
 
@@ -47,11 +47,11 @@ enum Keychain {
 
   static func load(key: String) -> String? {
     let query = [
-      kSecClass as String: kSecClassKey,
-      kSecAttrAccount as String: key,
-      kSecReturnData as String: kCFBooleanTrue as Any,
-      kSecMatchLimit as String: kSecMatchLimitOne
-    ] as [String: Any]
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key,
+      kSecReturnData: kCFBooleanTrue as Any,
+      kSecMatchLimit: kSecMatchLimitOne
+    ] as [CFString: Any]
 
     var dataTypeRef: AnyObject?
 

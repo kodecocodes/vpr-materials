@@ -329,6 +329,16 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Users" largeTitleDisplayMode="always" id="rP4-68-6iL">
+                        <barButtonItem key="leftBarButtonItem" style="done" id="HKT-Qz-5p5">
+                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="bUS-jK-G0p">
+                                <rect key="frame" x="20" y="7" width="92" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Log Out"/>
+                                <connections>
+                                    <action selector="logoutTapped:" destination="zwl-95-pPq" eventType="touchUpInside" id="ye6-s4-YHb"/>
+                                </connections>
+                            </button>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="huP-tl-DkL">
                             <connections>
                                 <segue destination="w24-nX-qwH" kind="show" id="NJ2-x1-nFm"/>
