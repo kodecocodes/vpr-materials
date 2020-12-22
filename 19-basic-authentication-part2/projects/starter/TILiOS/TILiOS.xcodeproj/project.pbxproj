@@ -30,7 +30,6 @@
 		23FBBD952066A67B00DBFA59 /* CreateUserTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD942066A67B00DBFA59 /* CreateUserTableViewController.swift */; };
 		23FBBD972066ADCB00DBFA59 /* AcronymsDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD962066ADCB00DBFA59 /* AcronymsDetailTableViewController.swift */; };
 		23FBBD992066AE8F00DBFA59 /* CreateAcronymTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD982066AE8F00DBFA59 /* CreateAcronymTableViewController.swift */; };
-		23FBBD9B2066AFAE00DBFA59 /* SelectUserTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD9A2066AFAE00DBFA59 /* SelectUserTableViewController.swift */; };
 		5C2901831F8F6DE700803663 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5C2901821F8F6DE700803663 /* LaunchScreen.storyboard */; };
 		D2A5F2091F4A9144005CD714 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2A5F2071F4A9144005CD714 /* Main.storyboard */; };
 		D2A5F20B1F4A9144005CD714 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D2A5F20A1F4A9144005CD714 /* Assets.xcassets */; };
@@ -61,7 +60,6 @@
 		23FBBD942066A67B00DBFA59 /* CreateUserTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUserTableViewController.swift; sourceTree = "<group>"; };
 		23FBBD962066ADCB00DBFA59 /* AcronymsDetailTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcronymsDetailTableViewController.swift; sourceTree = "<group>"; };
 		23FBBD982066AE8F00DBFA59 /* CreateAcronymTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAcronymTableViewController.swift; sourceTree = "<group>"; };
-		23FBBD9A2066AFAE00DBFA59 /* SelectUserTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectUserTableViewController.swift; sourceTree = "<group>"; };
 		5C2901821F8F6DE700803663 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D2A5F2001F4A9144005CD714 /* TILiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TILiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2A5F2081F4A9144005CD714 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -104,7 +102,6 @@
 				23FBBD942066A67B00DBFA59 /* CreateUserTableViewController.swift */,
 				23FBBD962066ADCB00DBFA59 /* AcronymsDetailTableViewController.swift */,
 				23FBBD982066AE8F00DBFA59 /* CreateAcronymTableViewController.swift */,
-				23FBBD9A2066AFAE00DBFA59 /* SelectUserTableViewController.swift */,
 				236A123E207BFBC400931AD3 /* AddToCategoryTableViewController.swift */,
 				23A3788525924D5E005B34F6 /* LoginTableViewController.swift */,
 			);
@@ -274,7 +271,6 @@
 				233638932062B99A001588B0 /* AcronymsTableViewController.swift in Sources */,
 				2323AF7724BDF52600D2E1B6 /* CreateAcronymData.swift in Sources */,
 				23AEEBE325925BB7000E20E9 /* CreateUserData.swift in Sources */,
-				23FBBD9B2066AFAE00DBFA59 /* SelectUserTableViewController.swift in Sources */,
 				2323AF7324B8B82100D2E1B6 /* ResourceRequestError.swift in Sources */,
 				23A3788F25925019005B34F6 /* Auth+Keychain.swift in Sources */,
 				2323AF7B24BDFD1D00D2E1B6 /* ResourceRequest.swift in Sources */,
