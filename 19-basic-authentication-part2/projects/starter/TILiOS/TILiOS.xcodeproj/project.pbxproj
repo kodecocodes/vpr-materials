@@ -19,6 +19,7 @@
 		23A3788625924D5E005B34F6 /* LoginTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A3788525924D5E005B34F6 /* LoginTableViewController.swift */; };
 		23A3788925924E9F005B34F6 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A3788825924E9F005B34F6 /* Token.swift */; };
 		23A3788F25925019005B34F6 /* Auth+Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A3788E25925019005B34F6 /* Auth+Keychain.swift */; };
+		23AEEBE325925BB7000E20E9 /* CreateUserData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEEBE225925BB7000E20E9 /* CreateUserData.swift */; };
 		23FBBD842066980600DBFA59 /* UsersTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD832066980600DBFA59 /* UsersTableViewController.swift */; };
 		23FBBD862066982500DBFA59 /* CategoriesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD852066982500DBFA59 /* CategoriesTableViewController.swift */; };
 		23FBBD8920669D1B00DBFA59 /* Acronym.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FBBD8820669D1B00DBFA59 /* Acronym.swift */; };
@@ -49,6 +50,7 @@
 		23A3788525924D5E005B34F6 /* LoginTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginTableViewController.swift; sourceTree = "<group>"; };
 		23A3788825924E9F005B34F6 /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		23A3788E25925019005B34F6 /* Auth+Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Auth+Keychain.swift"; sourceTree = "<group>"; };
+		23AEEBE225925BB7000E20E9 /* CreateUserData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUserData.swift; sourceTree = "<group>"; };
 		23FBBD832066980600DBFA59 /* UsersTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsersTableViewController.swift; sourceTree = "<group>"; };
 		23FBBD852066982500DBFA59 /* CategoriesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesTableViewController.swift; sourceTree = "<group>"; };
 		23FBBD8820669D1B00DBFA59 /* Acronym.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Acronym.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				23FBBD8C20669D4F00DBFA59 /* Category.swift */,
 				2323AF7624BDF52600D2E1B6 /* CreateAcronymData.swift */,
 				23A3788825924E9F005B34F6 /* Token.swift */,
+				23AEEBE225925BB7000E20E9 /* CreateUserData.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -270,6 +273,7 @@
 				23FBBD8B20669D3300DBFA59 /* User.swift in Sources */,
 				233638932062B99A001588B0 /* AcronymsTableViewController.swift in Sources */,
 				2323AF7724BDF52600D2E1B6 /* CreateAcronymData.swift in Sources */,
+				23AEEBE325925BB7000E20E9 /* CreateUserData.swift in Sources */,
 				23FBBD9B2066AFAE00DBFA59 /* SelectUserTableViewController.swift in Sources */,
 				2323AF7324B8B82100D2E1B6 /* ResourceRequestError.swift in Sources */,
 				23A3788F25925019005B34F6 /* Auth+Keychain.swift in Sources */,
