@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -35,25 +35,28 @@ enum AuthResult {
 }
 
 class Auth {
-  static let defaultsKey = "TIL-API-KEY"
-  let defaults = UserDefaults.standard
+  static let keychainKey = "TIL-API-KEY"
 
   var token: String? {
     get {
-      return defaults.string(forKey: Auth.defaultsKey)
+      Keychain.load(key: Auth.keychainKey)
     }
     set {
-      defaults.set(newValue, forKey: Auth.defaultsKey)
+      if let newToken = newValue {
+        Keychain.save(key: Auth.keychainKey, data: newToken)
+      }
     }
   }
-  
+
   func logout() {
     self.token = nil
     DispatchQueue.main.async {
-      guard let applicationDelegate = UIApplication.shared.delegate as? AppDelegate else {
-        return
+      guard let applicationDelegate =
+        UIApplication.shared.delegate as? AppDelegate else {
+          return
       }
-      let rootController = UIStoryboard(name: "Login", bundle: Bundle.main).instantiateViewController(withIdentifier: "LoginNavigation")
+      let rootController =
+        UIStoryboard(name: "Login", bundle: Bundle.main).instantiateViewController(withIdentifier: "LoginNavigation")
       applicationDelegate.window?.rootViewController = rootController
     }
   }
@@ -61,10 +64,14 @@ class Auth {
   func login(username: String, password: String, completion: @escaping (AuthResult) -> Void) {
     let path = "http://localhost:8080/api/users/login"
     guard let url = URL(string: path) else {
-      fatalError()
+      fatalError("Failed to convert URL")
     }
-    guard let loginString = "\(username):\(password)".data(using: .utf8)?.base64EncodedString() else {
-      fatalError()
+    guard
+      let loginString = "\(username):\(password)"
+        .data(using: .utf8)?
+        .base64EncodedString()
+    else {
+      fatalError("Failed to encode credentials")
     }
 
     var loginRequest = URLRequest(url: url)
@@ -72,21 +79,18 @@ class Auth {
     loginRequest.httpMethod = "POST"
 
     let dataTask = URLSession.shared.dataTask(with: loginRequest) { data, response, _ in
+      guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200, let jsonData = data else {
+        completion(.failure)
+        return
+      }
 
-      guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
-        let jsonData = data else {
-          completion(.failure)
-          return
-        }
-
-        do {
-          let token = try JSONDecoder()
-            .decode(Token.self, from: jsonData)
-          self.token = token.token
-          completion(.success)
-        } catch {
-          completion(.failure)
-        }
+      do {
+        let token = try JSONDecoder().decode(Token.self, from: jsonData)
+        self.token = token.value
+        completion(.success)
+      } catch {
+        completion(.failure)
+      }
     }
     dataTask.resume()
   }

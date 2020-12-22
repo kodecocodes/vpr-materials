@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,53 +26,17 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import UIKit
+import Foundation
 
-class CreateUserTableViewController: UITableViewController {
-  // MARK: - IBOutlets
-  @IBOutlet weak var nameTextField: UITextField!
-  @IBOutlet weak var usernameTextField: UITextField!
-  @IBOutlet weak var passwordTextField: UITextField!
+final class CreateUserData: Codable {
+  var id: UUID?
+  var name: String
+  var username: String
+  var password: String?
 
-  // MARK: - View Life Cycle
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    nameTextField.becomeFirstResponder()
-  }
-
-  // MARK: - IBActions
-  @IBAction func cancel(_ sender: Any) {
-    navigationController?.popViewController(animated: true)
-  }
-
-  @IBAction func save(_ sender: Any) {
-    guard let name = nameTextField.text, !name.isEmpty else {
-      ErrorPresenter.showError(message: "You must specify a name", on: self)
-      return
-    }
-
-    guard let username = usernameTextField.text, !username.isEmpty else {
-      ErrorPresenter.showError(message: "You must specify a username", on: self)
-      return
-    }
-
-    guard let password = passwordTextField.text, !password.isEmpty else {
-      ErrorPresenter.showError(message: "You must specify a password", on: self)
-      return
-    }
-
-    let user = CreateUserData(name: name, username: username, password: password)
-    ResourceRequest<User>(resourcePath: "users").save(user) { [weak self] result in
-      switch result {
-      case .failure:
-        let message = "There was a problem saving the user"
-        ErrorPresenter.showError(message: message, on: self)
-      case .success:
-        DispatchQueue.main.async { [weak self] in
-          self?.navigationController?
-            .popViewController(animated: true)
-        }
-      }
-    }
+  init(name: String, username: String, password: String) {
+    self.name = name
+    self.username = username
+    self.password = password
   }
 }

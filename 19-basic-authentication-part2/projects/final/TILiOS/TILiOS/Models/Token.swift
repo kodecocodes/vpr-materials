@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,9 @@ import Foundation
 
 final class Token: Codable {
   var id: UUID?
-  var token: String
-  var userID: UUID
+  var value: String
 
-  init(token: String, userID: UUID) {
-    self.token = token
-    self.userID = userID
+  init(value: String) {
+    self.value = value
   }
 }
