@@ -33,7 +33,7 @@ struct CreateToken: Migration {
     database.schema("tokens")
       .id()
       .field("value", .string, .required)
-      .field("userID", .uuid, .required, .references("users", "id"))
+      .field("userID", .uuid, .required, .references("users", "id", onDelete: .cascade))
       .create()
   }
 
