@@ -1,5 +1,3 @@
-// swift-tools-version:5.2
-
 /// Copyright (c) 2020 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,40 +26,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import PackageDescription
+import Fluent
 
-let package = Package(
-  name: "TILApp",
-  platforms: [
-    .macOS(.v10_15)
-  ],
-  dependencies: [
-    // 💧 A server-side Swift web framework.
-    .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-    .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
-    .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.0.0"),
-    .package(url: "https://github.com/vapor/leaf.git", from: "4.0.0")
-  ],
-  targets: [
-    .target(
-      name: "App",
-      dependencies: [
-        .product(name: "Fluent", package: "fluent"),
-        .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-        .product(name: "Vapor", package: "vapor"),
-        .product(name: "Leaf", package: "leaf")
-      ],
-      swiftSettings: [
-        // Enable better optimizations when building in Release configuration. Despite the use of
-        // the `.unsafeFlags` construct required by SwiftPM, this flag is recommended for Release
-        // builds. See <https://github.com/swift-server/guides#building-for-production> for details.
-        .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
-      ]
-    ),
-    .target(name: "Run", dependencies: [.target(name: "App")]),
-    .testTarget(name: "AppTests", dependencies: [
-      .target(name: "App"),
-      .product(name: "XCTVapor", package: "vapor"),
-    ])
-  ]
-)
+struct CreateToken: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("tokens")
+      .id()
+      .field("value", .string, .required)
+      .field("userID", .uuid, .required, .references("users", "id", onDelete: .cascade))
+      .create()
+  }
+
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("tokens").delete()
+  }
+}
