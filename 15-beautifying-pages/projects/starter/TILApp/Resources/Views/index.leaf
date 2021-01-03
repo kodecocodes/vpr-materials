@@ -1,28 +1,39 @@
 <!DOCTYPE html>
+<!-- 1 -->
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>#(title) | Acronyms</title>
-  </head>
-  <body>
-    <h1>Acronyms</h1>
+<head>
+  <meta charset="utf-8" />
+  <!-- 2 -->
+  <title>#(title) | Acronyms</title>
+</head>
+<body>
+  <!-- 1 -->
+  <h1>Acronyms</h1>
 
-    #if(acronyms) {
-      <table>
-        <thead>
-          <tr><th>Short</th><th>Long</th></tr>
-        </thead>
-        <tbody>
-          #for(acronym in acronyms) {
-            <tr>
-              <td><a href="/acronyms/#(acronym.id)">#(acronym.short)</a></td>
-              <td>#(acronym.long)</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    } else {
-      <h2>There aren’t any acronyms yet!</h2>
-    }
-  </body>
+  <!-- 2 -->
+  #if(acronyms):
+    <!-- 3 -->
+    <table>
+      <thead>
+        <tr>
+          <th>Short</th>
+          <th>Long</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 4 -->
+        #for(acronym in acronyms):
+          <tr>
+            <!-- 5 -->
+            <td><a href="/acronyms/#(acronym.id)">#(acronym.short)</a></td>
+            <td>#(acronym.long)</td>
+          </tr>
+        #endfor
+      </tbody>
+    </table>
+  <!-- 6 -->
+  #else:
+    <h2>There aren’t any acronyms yet!</h2>
+  #endif
+</body>
 </html>
