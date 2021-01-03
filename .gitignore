@@ -287,3 +287,5 @@ DerivedData/
 
 ## Gcc Patch
 /*.gcno
+Package.resolved
+.swiftpm/
