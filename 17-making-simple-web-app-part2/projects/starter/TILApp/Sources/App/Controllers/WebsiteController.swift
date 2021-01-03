@@ -29,7 +29,6 @@
 import Vapor
 
 struct WebsiteController: RouteCollection {
-
   func boot(routes: RoutesBuilder) throws {
     routes.get(use: indexHandler)
     routes.get("acronyms", ":acronymID", use: acronymHandler)
