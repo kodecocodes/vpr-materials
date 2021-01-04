@@ -50,7 +50,7 @@ struct WebsiteController: RouteCollection {
     protectedRoutes.post("acronyms", ":acronymID", "delete", use: deleteAcronymHandler)
   }
 
-  func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func indexHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.query(on: req.db).all().flatMap { acronyms in
       let userLoggedIn = req.auth.has(User.self)
       let showCookieMessage = req.cookies["cookies-accepted"] == nil
@@ -59,7 +59,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func acronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func acronymHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
       let userFuture = acronym.$user.get(on: req.db)
       let categoriesFuture = acronym.$categories.query(on: req.db).all()
@@ -74,7 +74,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func userHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func userHandler(_ req: Request) -> EventLoopFuture<View> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
       user.$acronyms.get(on: req.db).flatMap { acronyms in
         let context = UserContext(title: user.name, user: user, acronyms: acronyms)
@@ -83,7 +83,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func allUsersHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func allUsersHandler(_ req: Request) -> EventLoopFuture<View> {
     User.query(on: req.db).all().flatMap { users in
       let context = AllUsersContext(
         title: "All Users",
@@ -92,14 +92,14 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func allCategoriesHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func allCategoriesHandler(_ req: Request) -> EventLoopFuture<View> {
     Category.query(on: req.db).all().flatMap { categories in
       let context = AllCategoriesContext(categories: categories)
       return req.view.render("allCategories", context)
     }
   }
 
-  func categoryHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func categoryHandler(_ req: Request) -> EventLoopFuture<View> {
     Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { category in
       category.$acronyms.get(on: req.db).flatMap { acronyms in
         let context = CategoryContext(title: category.name, category: category, acronyms: acronyms)
@@ -108,7 +108,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func createAcronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func createAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
     let token = [UInt8].random(count: 16).base64
     // 2
     let context = CreateAcronymContext(csrfToken: token)
@@ -142,7 +142,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func editAcronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func editAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
     return Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
       acronym.$categories.get(on: req.db).flatMap { categories in
         let context = EditAcronymContext(acronym: acronym, categories: categories)
@@ -196,13 +196,13 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func deleteAcronymHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+  func deleteAcronymHandler(_ req: Request) -> EventLoopFuture<Response> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
       acronym.delete(on: req.db).transform(to: req.redirect(to: "/"))
     }
   }
 
-  func loginHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func loginHandler(_ req: Request) -> EventLoopFuture<View> {
     let context: LoginContext
     if let error = req.query[Bool.self, at: "error"], error {
       context = LoginContext(loginError: true)
@@ -212,7 +212,7 @@ struct WebsiteController: RouteCollection {
     return req.view.render("login", context)
   }
 
-  func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+  func loginPostHandler(_ req: Request) -> EventLoopFuture<Response> {
     if req.auth.has(User.self) {
       return req.eventLoop.future(req.redirect(to: "/"))
     } else {
@@ -221,7 +221,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func logoutHandler(_ req: Request) throws -> Response {
+  func logoutHandler(_ req: Request) -> Response {
     // 2
     req.auth.logout(User.self)
     // 3

@@ -51,15 +51,15 @@ struct UsersController: RouteCollection {
     return user.save(on: req.db).map { user.convertToPublic() }
   }
   
-  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[User.Public]> {
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[User.Public]> {
     User.query(on: req.db).all().convertToPublic()
   }
 
-  func getHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
+  func getHandler(_ req: Request) -> EventLoopFuture<User.Public> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).convertToPublic()
   }
   
-  func getAcronymsHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+  func getAcronymsHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
       user.$acronyms.get(on: req.db)
     }
