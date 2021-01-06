@@ -110,9 +110,7 @@ struct WebsiteController: RouteCollection {
 
   func createAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
     let token = [UInt8].random(count: 16).base64
-    // 2
     let context = CreateAcronymContext(csrfToken: token)
-    // 3
     req.session.data["CSRF_TOKEN"] = token
     return req.view.render("createAcronym", context)
   }
@@ -222,9 +220,7 @@ struct WebsiteController: RouteCollection {
   }
 
   func logoutHandler(_ req: Request) -> Response {
-    // 2
     req.auth.logout(User.self)
-    // 3
     return req.redirect(to: "/")
   }
 }
