@@ -57,7 +57,6 @@ final class AcronymTests: XCTestCase {
   }
 
   func testAcronymCanBeSavedWithAPI() throws {
-    let user = try User.create(on: app.db)
     let createAcronymData = CreateAcronymData(short: acronymShort, long: acronymLong)
     
     try app.test(.POST, acronymsURI, beforeRequest: { request in
