@@ -47,10 +47,10 @@ class CreateCategoryTableViewController: UITableViewController {
     guard
       let name = nameTextField.text,
       !name.isEmpty
-      else {
-        ErrorPresenter.showError(
-          message: "You must specify a name", on: self)
-        return
+    else {
+      ErrorPresenter.showError(
+        message: "You must specify a name", on: self)
+      return
     }
 
     let category = Category(name: name)

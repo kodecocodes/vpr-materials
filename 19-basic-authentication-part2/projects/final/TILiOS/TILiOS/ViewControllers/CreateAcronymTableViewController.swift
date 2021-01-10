@@ -53,11 +53,17 @@ class CreateAcronymTableViewController: UITableViewController {
   }
 
   @IBAction func save(_ sender: UIBarButtonItem) {
-    guard let shortText = acronymShortTextField.text, !shortText.isEmpty else {
+    guard 
+      let shortText = acronymShortTextField.text, 
+      !shortText.isEmpty 
+    else {
       ErrorPresenter.showError(message: "You must specify an acronym!", on: self)
       return
     }
-    guard let longText = acronymLongTextField.text, !longText.isEmpty else {
+    guard 
+      let longText = acronymLongTextField.text, 
+      !longText.isEmpty 
+    else {
       ErrorPresenter.showError(message: "You must specify a meaning!", on: self)
       return
     }

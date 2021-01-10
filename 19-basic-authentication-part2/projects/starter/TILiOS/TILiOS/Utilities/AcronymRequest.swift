@@ -92,9 +92,9 @@ struct AcronymRequest {
           let httpResponse = response as? HTTPURLResponse,
           httpResponse.statusCode == 200,
           let jsonData = data
-          else {
-            completion(.failure(.noData))
-            return
+        else {
+          completion(.failure(.noData))
+          return
         }
         do {
           let acronym = try JSONDecoder().decode(Acronym.self, from: jsonData)
@@ -134,9 +134,9 @@ struct AcronymRequest {
         guard
           let httpResponse = response as? HTTPURLResponse,
           httpResponse.statusCode == 201
-          else {
-            completion(.failure(.invalidResponse))
-            return
+        else {
+          completion(.failure(.invalidResponse))
+          return
         }
         completion(.success(()))
       }

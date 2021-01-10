@@ -75,7 +75,10 @@ struct ResourceRequest<ResourceType> where ResourceType: Codable {
           completion(.failure(.noData))
           return
         }
-        guard httpResponse.statusCode == 200, let jsonData = data else {
+        guard 
+          httpResponse.statusCode == 200, 
+          let jsonData = data 
+        else {
           if httpResponse.statusCode == 401 {
             Auth().logout()
           }

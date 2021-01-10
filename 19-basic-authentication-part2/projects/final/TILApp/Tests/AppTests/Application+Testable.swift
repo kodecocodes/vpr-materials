@@ -52,7 +52,7 @@ extension XCTApplicationTester {
       body: ByteBufferAllocator().buffer(capacity: 0)
     )
     request.headers.basicAuthorization = .init(username: user.username, password: "password")
-    let response = try self.performTest(request: request)
+    let response = try performTest(request: request)
     return try response.content.decode(Token.self)
   }
 
@@ -85,14 +85,14 @@ extension XCTApplicationTester {
         userToLogin = User(name: "Admin", username: "admin", password: "password")
       }
 
-      let token = try self.login(user: userToLogin)
+      let token = try login(user: userToLogin)
       request.headers.bearerAuthorization = .init(token: token.value)
     }
 
     try beforeRequest(&request)
 
     do {
-      let response = try self.performTest(request: request)
+      let response = try performTest(request: request)
       try afterResponse(response)
     } catch {
       XCTFail("\(error)", file: (file), line: line)

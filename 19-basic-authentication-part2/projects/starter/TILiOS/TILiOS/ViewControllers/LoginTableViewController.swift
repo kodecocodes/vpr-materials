@@ -34,12 +34,18 @@ class LoginTableViewController: UITableViewController {
   @IBOutlet weak var passwordTextField: UITextField!
 
   @IBAction func loginTapped(_ sender: UIBarButtonItem) {
-    guard let username = usernameTextField.text, !username.isEmpty else {
+    guard 
+      let username = usernameTextField.text, 
+      !username.isEmpty 
+    else {
       ErrorPresenter.showError(message: "Please enter your username", on: self)
       return
     }
 
-    guard let password = passwordTextField.text, !password.isEmpty else {
+    guard 
+      let password = passwordTextField.text, 
+      !password.isEmpty 
+    else {
       ErrorPresenter.showError(message: "Please enter your password", on: self)
       return
     }

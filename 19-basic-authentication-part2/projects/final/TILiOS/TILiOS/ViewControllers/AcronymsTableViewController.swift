@@ -30,7 +30,7 @@ import UIKit
 
 class AcronymsTableViewController: UITableViewController {
   // MARK: - Properties
-  var acronyms = [Acronym]()
+  var acronyms: [Acronym] = []
   let acronymsRequest = ResourceRequest<Acronym>(resourcePath: "acronyms")
 
   // MARK: - View Life Cycle

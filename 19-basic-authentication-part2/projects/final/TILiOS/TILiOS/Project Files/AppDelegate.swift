@@ -36,7 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if Auth().token == nil {
       let rootController = UIStoryboard(name: "Login", bundle: Bundle.main)
         .instantiateViewController(withIdentifier: "LoginNavigation")
-      self.window?.rootViewController = rootController
+      window?.rootViewController = rootController
     }
     return true
   }

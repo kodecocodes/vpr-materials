@@ -46,17 +46,26 @@ class CreateUserTableViewController: UITableViewController {
   }
 
   @IBAction func save(_ sender: Any) {
-    guard let name = nameTextField.text, !name.isEmpty else {
+    guard 
+      let name = nameTextField.text, 
+      !name.isEmpty 
+    else {
       ErrorPresenter.showError(message: "You must specify a name", on: self)
       return
     }
 
-    guard let username = usernameTextField.text, !username.isEmpty else {
+    guard 
+      let username = usernameTextField.text, 
+      !username.isEmpty 
+    else {
       ErrorPresenter.showError(message: "You must specify a username", on: self)
       return
     }
 
-    guard let password = passwordTextField.text, !password.isEmpty else {
+    guard 
+      let password = passwordTextField.text, 
+      !password.isEmpty 
+    else {
       ErrorPresenter.showError(message: "You must specify a password", on: self)
       return
     }

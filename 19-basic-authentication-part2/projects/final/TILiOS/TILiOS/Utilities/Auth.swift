@@ -49,7 +49,7 @@ class Auth {
   }
 
   func logout() {
-    self.token = nil
+    token = nil
     DispatchQueue.main.async {
       guard let applicationDelegate =
         UIApplication.shared.delegate as? AppDelegate else {
