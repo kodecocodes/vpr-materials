@@ -32,8 +32,14 @@ import Vapor
 
 // configures your application
 public func configure(_ app: Application) throws {
-  // uncomment to serve files from /Public folder
-  // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+
+  let port: Int
+  if let environmentPort = Environment.get("PORT") {
+    port = Int(environmentPort) ?? 8081
+  } else {
+    port = 8081
+  }
+  app.http.server.configuration.port = port
   
   app.databases.use(.postgres(
     hostname: Environment.get("DATABASE_HOST") ?? "localhost",
@@ -42,7 +48,8 @@ public func configure(_ app: Application) throws {
     password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
     database: Environment.get("DATABASE_NAME") ?? "vapor_database"
   ), as: .psql)
-  
+
+  app.migrations.add(CreateUser())  
   
   // register routes
   try routes(app)
