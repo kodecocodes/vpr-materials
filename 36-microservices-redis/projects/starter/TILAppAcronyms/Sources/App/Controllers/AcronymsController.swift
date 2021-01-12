@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2020 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,37 +30,45 @@ import Vapor
 import Fluent
 
 struct AcronymsController: RouteCollection {
-  func boot(router: Router) throws {
-    router.get(use: getAllHandler)
-    router.get(Acronym.parameter, use: getHandler)
-    router.post(use: createHandler)
-    router.delete(Acronym.parameter, use: deleteHandler)
-    router.put(Acronym.parameter, use: updateHandler)
+
+  func boot(routes: RoutesBuilder) throws {
+    routes.get(use: getAllHandler)
+    routes.get(":acronymID", use: getHandler)
+    routes.post(use: createHandler)
+    routes.delete(":acronymID", use: deleteHandler)
+    routes.put(":acronymID", use: updateHandler)
   }
 
-  func getAllHandler(_ req: Request) throws -> Future<[Acronym]> {
-    return Acronym.query(on: req).all()
+  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+    return Acronym.query(on: req.db).all()
   }
 
-  func getHandler(_ req: Request) throws -> Future<Acronym> {
-    return try req.parameters.next(Acronym.self)
+  func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db)
+      .unwrap(or: Abort(.notFound))
   }
 
-  func createHandler(_ req: Request) throws -> Future<Acronym> {
-    let acronym = try req.content.syncDecode(Acronym.self)
-    return acronym.save(on: req)
+  func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    let acronym = try req.content.decode(Acronym.self)
+    return acronym.save(on: req.db).map { acronym }
   }
 
-  func deleteHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    return try req.parameters.next(Acronym.self).delete(on: req).transform(to: .noContent)
+  func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db)
+      .unwrap(or: Abort(.notFound))
+      .flatMap { $0.delete(on: req.db) }
+      .transform(to: .noContent)
   }
 
-  func updateHandler(_ req: Request) throws -> Future<Acronym> {
-    return try flatMap(to: Acronym.self, req.parameters.next(Acronym.self), req.content.decode(Acronym.self)) { acronym, updateData in
-      acronym.short = updateData.short
-      acronym.long = updateData.long
-      acronym.userID = updateData.userID
-      return acronym.save(on: req)
-    }
+  func updateHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    let updateData = try req.content.decode(Acronym.self)
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db)
+      .unwrap(or: Abort(.notFound))
+      .flatMap { acronym in
+        acronym.short = updateData.short
+        acronym.long = updateData.long
+        acronym.userID = updateData.userID
+        return acronym.save(on: req.db).map { acronym }
+      }
   }
 }
