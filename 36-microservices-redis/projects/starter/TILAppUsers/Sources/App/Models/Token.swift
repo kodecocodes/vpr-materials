@@ -26,24 +26,24 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Fluent
-import FluentPostgresDriver
+import Foundation
 import Vapor
 
-// configures your application
-public func configure(_ app: Application) throws {
-  // uncomment to serve files from /Public folder
-  // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-  
-  app.databases.use(.postgres(
-    hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-    port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-    username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
-    password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
-    database: Environment.get("DATABASE_NAME") ?? "vapor_database"
-  ), as: .psql)
-  
-  
-  // register routes
-  try routes(app)
+final class Token: Content {
+  var id: UUID?
+  var tokenString: String
+  var userID: UUID
+
+  init(tokenString: String, userID: UUID) {
+    self.tokenString = tokenString
+    self.userID = userID
+  }
 }
+
+extension Token {
+  static func generate(for user: User) throws -> Token {
+    let random = [UInt8].random(count: 32)
+    return try Token(tokenString: random.base64, userID: user.requireID())
+  }
+}
+

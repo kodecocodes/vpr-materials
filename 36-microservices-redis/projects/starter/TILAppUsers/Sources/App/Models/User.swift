@@ -26,24 +26,66 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Fluent
-import FluentPostgresDriver
+import Foundation
 import Vapor
+import Fluent
 
-// configures your application
-public func configure(_ app: Application) throws {
-  // uncomment to serve files from /Public folder
-  // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-  
-  app.databases.use(.postgres(
-    hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-    port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-    username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
-    password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
-    database: Environment.get("DATABASE_NAME") ?? "vapor_database"
-  ), as: .psql)
-  
-  
-  // register routes
-  try routes(app)
+final class User: Model, Content {
+  static let schema = "users"
+
+  @ID
+  var id: UUID?
+
+  @Field(key: "name")
+  var name: String
+
+  @Field(key: "username")
+  var username: String
+
+  @Field(key: "password")
+  var password: String
+
+  init(name: String, username: String, password: String) {
+    self.name = name
+    self.username = username
+    self.password = password
+  }
+
+  init() {}
+
+  final class Public: Content {
+    var id: UUID?
+    var name: String
+    var username: String
+
+    init(id: UUID?, name: String, username: String) {
+      self.id = id
+      self.name = name
+      self.username = username
+    }
+  }
 }
+
+extension User {
+  func convertToPublic() -> User.Public {
+    return User.Public(id: id, name: name, username: username)
+  }
+}
+
+extension EventLoopFuture where Value: User {
+  func convertToPublic() -> EventLoopFuture<User.Public> {
+    return self.map { user in
+      return user.convertToPublic()
+    }
+  }
+}
+
+extension User: ModelAuthenticatable {
+  static let usernameKey = \User.$username
+  static let passwordHashKey = \User.$password
+  
+  func verify(password: String) throws -> Bool {
+    try Bcrypt.verify(password, created: self.password)
+  }
+}
+
