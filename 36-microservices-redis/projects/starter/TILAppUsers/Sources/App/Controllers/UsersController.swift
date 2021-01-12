@@ -26,78 +26,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Foundation
 import Vapor
-import Fluent
 
-final class User: Model, Content {
-  static let schema = "users"
-
-  @ID
-  var id: UUID?
-
-  @Field(key: "name")
-  var name: String
-
-  @Field(key: "username")
-  var username: String
-
-  @Field(key: "password")
-  var password: String
-
-  init(name: String, username: String, password: String) {
-    self.name = name
-    self.username = username
-    self.password = password
+struct UsersController: RouteCollection {
+  func boot(routes: RoutesBuilder) throws {
+    let usersGroup = routes.grouped("users")
+    usersGroup.get(use: getAllHandler)
+    usersGroup.get(":userID", use: getHandler)
+    usersGroup.post(use: createHandler)
   }
 
-  init() {}
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[User.Public]> {
+    User.query(on: req.db).all().convertToPublic()
+  }
 
-  final class Public: Content {
-    var id: UUID?
-    var name: String
-    var username: String
+  func getHandler(_ req: Request) -> EventLoopFuture<User.Public> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).convertToPublic()
+  }
 
-    init(id: UUID?, name: String, username: String) {
-      self.id = id
-      self.name = name
-      self.username = username
+  func createHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
+    let user = try req.content.decode(User.self)
+    user.password = try Bcrypt.hash(user.password)
+    return user.save(on: req.db).map {
+      user.convertToPublic()
     }
   }
 }
-
-extension User {
-  func convertToPublic() -> User.Public {
-    return User.Public(id: id, name: name, username: username)
-  }
-}
-
-extension EventLoopFuture where Value: User {
-  func convertToPublic() -> EventLoopFuture<User.Public> {
-    return self.map { user in
-      return user.convertToPublic()
-    }
-  }
-}
-
-extension Collection where Element: User {
-  func convertToPublic() -> [User.Public] {
-    return self.map { $0.convertToPublic() }
-  }
-}
-
-extension EventLoopFuture where Value == Array<User> {
-  func convertToPublic() -> EventLoopFuture<[User.Public]> {
-    return self.map { $0.convertToPublic() }
-  }
-}
-
-extension User: ModelAuthenticatable {
-  static let usernameKey = \User.$username
-  static let passwordHashKey = \User.$password
-  
-  func verify(password: String) throws -> Bool {
-    try Bcrypt.verify(password, created: self.password)
-  }
-}
-
