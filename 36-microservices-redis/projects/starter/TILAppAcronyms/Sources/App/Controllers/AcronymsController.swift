@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@ import Vapor
 import Fluent
 
 struct AcronymsController: RouteCollection {
-
   func boot(routes: RoutesBuilder) throws {
     routes.get(use: getAllHandler)
     routes.get(":acronymID", use: getHandler)
@@ -39,11 +38,11 @@ struct AcronymsController: RouteCollection {
     routes.put(":acronymID", use: updateHandler)
   }
 
-  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
     return Acronym.query(on: req.db).all()
   }
 
-  func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+  func getHandler(_ req: Request) -> EventLoopFuture<Acronym> {
     return Acronym.find(req.parameters.get("acronymID"), on: req.db)
       .unwrap(or: Abort(.notFound))
   }
@@ -53,7 +52,7 @@ struct AcronymsController: RouteCollection {
     return acronym.save(on: req.db).map { acronym }
   }
 
-  func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+  func deleteHandler(_ req: Request) -> EventLoopFuture<HTTPStatus> {
     return Acronym.find(req.parameters.get("acronymID"), on: req.db)
       .unwrap(or: Abort(.notFound))
       .flatMap { $0.delete(on: req.db) }
