@@ -29,7 +29,7 @@
 import Vapor
 
 final class Acronym: Content {
-  var id: Int?
+  var id: UUID?
   var short: String
   var long: String
   var userID: UUID
