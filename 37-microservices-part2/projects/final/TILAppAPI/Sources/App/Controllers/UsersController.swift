@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -36,43 +36,47 @@ struct UsersController: RouteCollection {
     userServiceURL = "http://\(userServiceHostname):8081"
     acronymsServiceURL = "http://\(acronymsServiceHostname):8082"
   }
-
-  func boot(router: Router) throws {
-    let routeGroup = router.grouped("api", "users")
+  
+  func boot(routes: RoutesBuilder) throws {
+    let routeGroup = routes.grouped("api", "users")
     routeGroup.get(use: getAllHandler)
-    routeGroup.get(UUID.parameter, use: getHandler)
+    routeGroup.get(":userID", use: getHandler)
     routeGroup.post(use: createHandler)
     routeGroup.post("login", use: loginHandler)
-    routeGroup.get(UUID.parameter, "acronyms", use: getAcronyms)
+    routeGroup.get(":userID", "acronyms", use: getAcronyms)
   }
   
-  func getAllHandler(_ req: Request) throws -> Future<Response> {
-    return try req.client().get("\(userServiceURL)/users")
+  func getAllHandler(_ req: Request) -> EventLoopFuture<ClientResponse> {
+    return req.client.get("\(userServiceURL)/users")
   }
   
-  func getHandler(_ req: Request) throws -> Future<Response> {
-    let id = try req.parameters.next(UUID.self)
-    return try req.client().get("\(userServiceURL)/users/\(id)")
+  func getHandler(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    let id = try req.parameters.require("userID", as: UUID.self)
+    return req.client.get("\(userServiceURL)/users/\(id)")
   }
   
-  func createHandler(_ req: Request) throws -> Future<Response> {
-    return try req.client().post("\(userServiceURL)/users") { createRequest in
-      try createRequest.content.encode(req.content.syncDecode(CreateUserData.self))
+  func createHandler(_ req: Request) -> EventLoopFuture<ClientResponse> {
+    return req.client.post("\(userServiceURL)/users") {
+      createRequest in
+      try createRequest.content.encode(req.content.decode(CreateUserData.self))
     }
   }
   
-  func loginHandler(_ req: Request) throws -> Future<Response> {
-    return try req.client().post("\(userServiceURL)/auth/login") { loginRequest in
-      guard let authHeader = req.http.headers[.authorization].first else {
+  func loginHandler(_ req: Request) -> EventLoopFuture<ClientResponse> {
+    return req.client.post("\(userServiceURL)/auth/login") { loginRequest in
+      guard let authHeader = req.headers[.authorization].first else {
         throw Abort(.unauthorized)
       }
-      loginRequest.http.headers.add(name: .authorization, value: authHeader)
+      loginRequest.headers.add(name: .authorization, value: authHeader)
     }
   }
   
-  func getAcronyms(_ req: Request) throws -> Future<Response> {
-    let userID = try req.parameters.next(UUID.self)
-    return try req.client().get("\(acronymsServiceURL)/user/\(userID)")
+  func getAcronyms(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    // 1
+    let userID = try req.parameters.require("userID", as: UUID.self)
+    // 2
+    return req.client
+      .get("\(acronymsServiceURL)/user/\(userID)")
   }
 }
 

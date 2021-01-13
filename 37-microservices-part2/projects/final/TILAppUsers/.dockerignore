@@ -1,6 +1,2 @@
-.git
-.build
-DerivedData
-Package.resolved
-*.xcodeproj
-
+.build/
+.swiftpm/

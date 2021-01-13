@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -31,67 +31,68 @@ import Vapor
 struct AcronymsController: RouteCollection {
   let acronymsServiceURL: String
   let userServiceURL: String
-  
+
   init(acronymsServiceHostname: String, userServiceHostname: String) {
     acronymsServiceURL = "http://\(acronymsServiceHostname):8082"
     userServiceURL = "http://\(userServiceHostname):8081"
   }
 
-  func boot(router: Router) throws {
-    let acronymsGroup = router.grouped("api", "acronyms")
+  func boot(routes: RoutesBuilder) throws {
+    let acronymsGroup = routes.grouped("api", "acronyms")
     acronymsGroup.get(use: getAllHandler)
-    acronymsGroup.get(Int.parameter, use: getHandler)
+    acronymsGroup.get(":acronymID", use: getHandler)
     acronymsGroup.post(use: createHandler)
-    acronymsGroup.put(Int.parameter, use: updateHandler)
-    acronymsGroup.delete(Int.parameter, use: deleteHandler)
-    acronymsGroup.get(Int.parameter, "user", use: getUserHandler)
+    acronymsGroup.put(":acronymID", use: updateHandler)
+    acronymsGroup.delete(":acronymID", use: deleteHandler)
+    acronymsGroup.get(":acronymID", "user", use: getUserHandler)
   }
-  
-  func getAllHandler(_ req: Request) throws -> Future<Response> {
-    return try req.client().get("\(acronymsServiceURL)/")
+
+  func getAllHandler(_ req: Request) -> EventLoopFuture<ClientResponse> {
+    return req.client.get("\(acronymsServiceURL)/")
   }
-  
-  func getHandler(_ req: Request) throws -> Future<Response> {
-    let id = try req.parameters.next(Int.self)
-    return try req.client().get("\(acronymsServiceURL)/\(id)")
+
+  func getHandler(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    let id = try req.parameters.require("acronymID", as: UUID.self)
+    return req.client.get("\(acronymsServiceURL)/\(id)")
   }
-  
-  func createHandler(_ req: Request) throws -> Future<Response> {
-    return try req.client().post("\(acronymsServiceURL)/") { createRequest in
-      guard let authHeader = req.http.headers[.authorization].first else {
+
+  func createHandler(_ req: Request) -> EventLoopFuture<ClientResponse> {
+    return req.client.post("\(acronymsServiceURL)/") { createRequest in
+      guard let authHeader = req.headers[.authorization].first else {
         throw Abort(.unauthorized)
       }
-      createRequest.http.headers.add(name: .authorization, value: authHeader)
-      try createRequest.content.encode(req.content.syncDecode(CreateAcronymData.self))
+      createRequest.headers.add(name: .authorization, value: authHeader)
+      try createRequest.content.encode(req.content.decode(CreateAcronymData.self))
     }
   }
-  
-  func updateHandler(_ req: Request) throws -> Future<Response> {
-    let acronymID = try req.parameters.next(Int.self)
-    return try req.client().put("\(acronymsServiceURL)/\(acronymID)") { updateRequest in
-      guard let authHeader = req.http.headers[.authorization].first else {
+
+  func updateHandler(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    let acronymID = try req.parameters.require("acronymID", as: UUID.self)
+    return req.client.put("\(acronymsServiceURL)/\(acronymID)") { updateRequest in
+      guard let authHeader = req.headers[.authorization].first else {
         throw Abort(.unauthorized)
       }
-      updateRequest.http.headers.add(name: .authorization, value: authHeader)
-      try updateRequest.content.encode(req.content.syncDecode(CreateAcronymData.self))
+      updateRequest.headers.add(name: .authorization, value: authHeader)
+      try updateRequest.content.encode(req.content.decode(CreateAcronymData.self))
     }
   }
-  
-  func deleteHandler(_ req: Request) throws -> Future<Response> {
-    let acronymID = try req.parameters.next(Int.self)
-    return try req.client().delete("\(acronymsServiceURL)/\(acronymID)") { deleteRequest in
-      guard let authHeader = req.http.headers[.authorization].first else {
+
+  func deleteHandler(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    let acronymID = try req.parameters.require("acronymID", as: UUID.self)
+    return req.client.delete("\(acronymsServiceURL)/\(acronymID)") { deleteRequest in
+      guard let authHeader = req.headers[.authorization].first else {
         throw Abort(.unauthorized)
       }
-      deleteRequest.http.headers.add(name: .authorization, value: authHeader)
+      deleteRequest.headers.add(name: .authorization, value: authHeader)
     }
   }
-  
-  func getUserHandler(_ req: Request) throws -> Future<Response> {
-    let acronymID = try req.parameters.next(Int.self)
-    return try req.client().get("\(acronymsServiceURL)/\(acronymID)").flatMap(to: Response.self) { response in
-      let acronym = try response.content.syncDecode(Acronym.self)
-      return try req.client().get("\(self.userServiceURL)/users/\(acronym.userID)")
+
+  func getUserHandler(_ req: Request) throws -> EventLoopFuture<ClientResponse> {
+    let acronymID = try req.parameters.require("acronymID", as: UUID.self)
+    return req.client.get("\(acronymsServiceURL)/\(acronymID)").flatMapThrowing { response in
+      return try response.content.decode(Acronym.self)
+    }.flatMap { acronym in
+      return req.client.get("\(self.userServiceURL)/users/\(acronym.userID)")
     }
   }
 }

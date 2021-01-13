@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -28,23 +28,26 @@
 
 import Vapor
 
-/// Register your application's routes here.
-public func routes(_ router: Router) throws {
+func routes(_ app: Application) throws {
   let usersHostname: String
   let acronymsHostname: String
-  
+
   if let users = Environment.get("USERS_HOSTNAME") {
     usersHostname = users
   } else {
     usersHostname = "localhost"
   }
-  
+
   if let acronyms = Environment.get("ACRONYMS_HOSTNAME") {
     acronymsHostname = acronyms
   } else {
     acronymsHostname = "localhost"
   }
-  
-  try router.register(collection: UsersController(userServiceHostname: usersHostname, acronymsServiceHostname: acronymsHostname))
-  try router.register(collection: AcronymsController(acronymsServiceHostname: acronymsHostname, userServiceHostname: usersHostname))
+
+  try app.register(collection: UsersController(
+    userServiceHostname: usersHostname,
+    acronymsServiceHostname: acronymsHostname))
+  try app.register(collection: AcronymsController(
+    acronymsServiceHostname: acronymsHostname,
+    userServiceHostname: usersHostname))
 }

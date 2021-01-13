@@ -3,15 +3,16 @@ services:
   postgres:
     image: "postgres"
     environment:
-      - POSTGRES_DB=vapor
-      - POSTGRES_USER=vapor
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=vapor_database
+      - POSTGRES_USER=vapor_username
+      - POSTGRES_PASSWORD=vapor_password
   mysql:
-    image: "mysql/mysql-server:5.7"
+    image: "mysql"
     environment:
-      - MYSQL_USER=vapor
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=vapor
+      - MYSQL_USER=vapor_username
+      - MYSQL_PASSWORD=vapor_password
+      - MYSQL_DATABASE=vapor_database
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
   redis:
     image: "redis"
   til-users:
@@ -20,22 +21,21 @@ services:
       - redis
     build:
       context: ./TILAppUsers
-      dockerfile: web.Dockerfile
+      dockerfile: Dockerfile
     environment:
-      - DATABASE_HOSTNAME=postgres
+      - DATABASE_HOST=postgres
       - REDIS_HOSTNAME=redis
       - PORT=8081
       - ENVIRONMENT=production
-      - DATABASE_PASSWORD=password
   til-acronyms:
     depends_on:
       - mysql
       - til-users
     build:
       context: ./TILAppAcronyms
-      dockerfile: web.Dockerfile
+      dockerfile: Dockerfile
     environment:
-      - DATABASE_HOSTNAME=mysql
+      - DATABASE_HOST=mysql
       - PORT=8082
       - ENVIRONMENT=production
       - AUTH_HOSTNAME=til-users
@@ -47,7 +47,7 @@ services:
       - "8080:8080"
     build:
       context: ./TILAppAPI
-      dockerfile: web.Dockerfile
+      dockerfile: Dockerfile
     environment:
       - USERS_HOSTNAME=til-users
       - ACRONYMS_HOSTNAME=til-acronyms
