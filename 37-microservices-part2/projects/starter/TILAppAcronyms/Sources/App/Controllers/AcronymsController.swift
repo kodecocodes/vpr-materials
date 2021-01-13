@@ -52,9 +52,7 @@ struct AcronymsController: RouteCollection {
 
   func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
     let data = try req.content.decode(AcronymData.self)
-    // 2
     let user = try req.auth.require(User.self)
-    // 3
     let acronym = Acronym(
       short: data.short,
       long: data.long,
@@ -82,15 +80,9 @@ struct AcronymsController: RouteCollection {
       }
   }
 
-  func getUsersAcronyms(_ req: Request)
-    throws -> EventLoopFuture<[Acronym]> {
-      // 1
-      let userID =
-        try req.parameters.require("userID", as: UUID.self)
-      // 2
-      return Acronym.query(on: req.db)
-        .filter(\.$userID == userID)
-        .all()
+  func getUsersAcronyms(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+    let userID = try req.parameters.require("userID", as: UUID.self)
+    return Acronym.query(on: req.db).filter(\.$userID == userID).all()
   }
 }
 
