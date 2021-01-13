@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,21 @@
 
 import Foundation
 import Vapor
-import FluentPostgreSQL
-import Authentication
+import Fluent
 
-final class User: Codable {
+final class User: Model, Content {
+  static let schema = "users"
+
+  @ID
   var id: UUID?
+
+  @Field(key: "name")
   var name: String
+
+  @Field(key: "username")
   var username: String
+
+  @Field(key: "password")
   var password: String
 
   init(name: String, username: String, password: String) {
@@ -43,7 +51,9 @@ final class User: Codable {
     self.password = password
   }
 
-  final class Public: Codable {
+  init() {}
+
+  final class Public: Content {
     var id: UUID?
     var name: String
     var username: String
@@ -56,27 +66,38 @@ final class User: Codable {
   }
 }
 
-extension User: PostgreSQLUUIDModel {}
-extension User: Content {}
-extension User: Migration {}
-extension User: Parameter {}
-extension User.Public: Content {}
-
 extension User {
   func convertToPublic() -> User.Public {
     return User.Public(id: id, name: name, username: username)
   }
 }
 
-extension Future where T: User {
-  func convertToPublic() -> Future<User.Public> {
-    return self.map(to: User.Public.self) { user in
+extension EventLoopFuture where Value: User {
+  func convertToPublic() -> EventLoopFuture<User.Public> {
+    return self.map { user in
       return user.convertToPublic()
     }
   }
 }
 
-extension User: BasicAuthenticatable {
-  static let usernameKey: UsernameKey = \User.username
-  static let passwordKey: PasswordKey = \User.password
+extension Collection where Element: User {
+  func convertToPublic() -> [User.Public] {
+    return self.map { $0.convertToPublic() }
+  }
 }
+
+extension EventLoopFuture where Value == Array<User> {
+  func convertToPublic() -> EventLoopFuture<[User.Public]> {
+    return self.map { $0.convertToPublic() }
+  }
+}
+
+extension User: ModelAuthenticatable {
+  static let usernameKey = \User.$username
+  static let passwordHashKey = \User.$password
+  
+  func verify(password: String) throws -> Bool {
+    try Bcrypt.verify(password, created: self.password)
+  }
+}
+

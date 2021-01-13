@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,23 +27,30 @@
 /// THE SOFTWARE.
 
 import Vapor
-import FluentMySQL
+import Fluent
 import Foundation
 
-final class Acronym: Codable {
-  var id: Int?
+final class Acronym: Model, Content {
+  static let schema = "acronyms"
+
+  @ID(key: .id)
+  var id: UUID?
+
+  @Field(key: "short")
   var short: String
+
+  @Field(key: "long")
   var long: String
+
+  @Field(key: "userID")
   var userID: UUID
 
-  init(short: String, long: String, userID: UUID) {
+  init() { }
+
+  init(id: UUID? = nil, short: String, long: String, userID: UUID) {
+    self.id = id
     self.short = short
     self.long = long
     self.userID = userID
   }
 }
-
-extension Acronym: Content {}
-extension Acronym: Migration {}
-extension Acronym: Parameter {}
-extension Acronym: MySQLModel {}

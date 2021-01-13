@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -28,25 +28,25 @@
 
 import Vapor
 
-final class UserAuthMiddleware: Middleware {
-  func respond(to request: Request, chainingTo next: Responder) throws -> Future<Response> {
-    guard let token = request.http.headers.bearerAuthorization else {
-      throw Abort(.unauthorized)
+struct UserAuthMiddleware: Middleware {
+  func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
+    guard let token = request.headers.bearerAuthorization else {
+      return request.eventLoop.future(error: Abort(.unauthorized))
     }
-    
-    return try request.client().post("http://localhost:8081/auth/authenticate") { authRequest in
+    return request.client.post("http://localhost:8081/auth/authenticate", beforeSend: { authRequest in
       try authRequest.content.encode(AuthenticateData(token: token.token))
-      }.flatMap(to: Response.self) { response in
-        guard response.http.status == .ok else {
-          if response.http.status == .unauthorized {
-            throw Abort(.unauthorized)
-          } else {
-            throw Abort(.internalServerError)
-          }
+    }).flatMapThrowing { response in
+      guard response.status == .ok else {
+        if response.status == .unauthorized {
+          throw Abort(.unauthorized)
+        } else {
+          throw Abort(.internalServerError)
         }
-        let user = try response.content.syncDecode(User.self)
-        try request.authenticate(user)
-        return try next.respond(to: request)
+      }
+      let user = try response.content.decode(User.self)
+      request.auth.login(user)
+    }.flatMap {
+      return next.respond(to: request)
     }
   }
 }
