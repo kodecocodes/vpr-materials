@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,8 @@
 
 import Foundation
 import Vapor
-import Crypto
 
-final class Token: Codable {
+final class Token: Content {
   var id: UUID?
   var tokenString: String
   var userID: UUID
@@ -41,11 +40,10 @@ final class Token: Codable {
   }
 }
 
-extension Token: Content {}
-
 extension Token {
   static func generate(for user: User) throws -> Token {
-    let random = try CryptoRandom().generateData(count: 16)
-    return try Token(tokenString: random.base64EncodedString(), userID: user.requireID())
+    let random = [UInt8].random(count: 32)
+    return try Token(tokenString: random.base64, userID: user.requireID())
   }
 }
+

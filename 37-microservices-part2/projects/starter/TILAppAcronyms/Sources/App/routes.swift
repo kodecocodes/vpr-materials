@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,6 @@
 import Vapor
 
 /// Register your application's routes here.
-public func routes(_ router: Router) throws {
-  try router.register(collection: AcronymsController())
+func routes(_ app: Application) throws {
+  try app.register(collection: AcronymsController())
 }

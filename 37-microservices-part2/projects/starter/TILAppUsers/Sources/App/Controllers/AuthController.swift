@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,40 +27,55 @@
 /// THE SOFTWARE.
 
 import Vapor
-import Crypto
 import Redis
 import Fluent
 
 struct AuthController: RouteCollection {
-  func boot(router: Router) throws {
-    let authGroup = router.grouped("auth")
-    
-    let basicAuthMiddleware = User.basicAuthMiddleware(using: BCryptDigest())
-    let basicAuthGroup = authGroup.grouped(basicAuthMiddleware)
+  func boot(routes: RoutesBuilder) throws {
+    let authGroup = routes.grouped("auth")
+    // 2
+    let basicMiddleware = User.authenticator()
+    // 3
+    let basicAuthGroup = authGroup.grouped(basicMiddleware)
+    // 4
     basicAuthGroup.post("login", use: loginHandler)
-    
-    authGroup.post(AuthenticateData.self, at: "authenticate", use: authenticate)
+    authGroup.post("authenticate", use: authenticate)
   }
-  
-  func loginHandler(_ req: Request) throws -> Future<Token> {
-    let user = try req.requireAuthenticated(User.self)
-    let token = try Token.generate(for: user)
-    return req.withPooledConnection(to: .redis) { redis in
-      redis.jsonSet(token.tokenString, to: token).transform(to: token)
-    }
+
+  func loginHandler(_ req: Request)
+    throws -> EventLoopFuture<Token> {
+      // 1
+      let user = try req.auth.require(User.self)
+      // 2
+      let token = try Token.generate(for: user)
+      // 3
+      return req.redis
+        .set(RedisKey(token.tokenString), toJSON: token)
+        .transform(to: token)
   }
-  
-  func authenticate(_ req: Request, data: AuthenticateData) throws -> Future<User.Public> {
-    return req.withPooledConnection(to: .redis) { redis in
-      return redis.jsonGet(data.token, as: Token.self).flatMap(to: User.Public.self) { token in
+
+  func authenticate(_ req: Request)
+    throws -> EventLoopFuture<User.Public> {
+      // 1
+      let data = try req.content.decode(AuthenticateData.self)
+      // 2
+      return req.redis
+        .get(RedisKey(data.token), asJSON: Token.self)
+        .flatMap { token in
+        // 3
         guard let token = token else {
-          throw Abort(.unauthorized)
+          return req.eventLoop.future(error: Abort(.unauthorized))
         }
-        return User.query(on: req).filter(\.id == token.userID).first().unwrap(or: Abort(.internalServerError)).convertToPublic()
+        // 4
+        return User.query(on: req.db)
+          .filter(\.$id == token.userID)
+          .first()
+          .unwrap(or: Abort(.internalServerError))
+          .convertToPublic()
       }
-    }
   }
 }
+
 
 struct AuthenticateData: Content {
   let token: String
