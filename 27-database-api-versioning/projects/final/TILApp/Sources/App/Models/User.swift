@@ -47,7 +47,7 @@ final class User: Model, Content {
   @Children(for: \.$user)
   var acronyms: [Acronym]
 
-  @Field(key: User.v20210114.twitterURL)
+  @OptionalField(key: User.v20210114.twitterURL)
   var twitterURL: String?
   
   init() {}
