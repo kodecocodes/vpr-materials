@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,28 +26,23 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Routing
-import Vapor
 import Fluent
+import Vapor
 
-/// Register your application's routes here.
-///
-/// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#routesswift)
-public func routes(_ router: Router) throws {
-  // Basic "Hello, world!" example
-  router.get("hello") { req in
+func routes(_ app: Application) throws {  
+  app.get("hello") { req -> String in
     return "Hello, world!"
   }
-
+  
   let acronymsController = AcronymsController()
-  try router.register(collection: acronymsController)
-
+  try app.register(collection: acronymsController)
+  
   let usersController = UsersController()
-  try router.register(collection: usersController)
-
+  try app.register(collection: usersController)
+  
   let categoriesController = CategoriesController()
-  try router.register(collection: categoriesController)
+  try app.register(collection: categoriesController)
 
   let websiteController = WebsiteController()
-  try router.register(collection: websiteController)
+  try app.register(collection: websiteController)
 }

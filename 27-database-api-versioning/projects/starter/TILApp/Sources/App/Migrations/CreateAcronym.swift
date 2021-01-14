@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,19 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Routing
-import Vapor
+import Fluent
 
-/// Called after your application has initialized.
-///
-/// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#bootswift)
-public func boot(_ app: Application) throws {
-  // your code here
+struct CreateAcronym: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("acronyms")
+      .id()
+      .field("short", .string, .required)
+      .field("long", .string, .required)
+      .field("userID", .uuid, .required, .references("users", "id"))
+      .create()
+  }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("acronyms").delete()
+  }
 }
