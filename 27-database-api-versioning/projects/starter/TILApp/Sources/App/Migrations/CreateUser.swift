@@ -30,16 +30,26 @@ import Fluent
 
 struct CreateUser: Migration {
   func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("users")
+    database.schema(User.v20210114.schemaName)
       .id()
-      .field("name", .string, .required)
-      .field("username", .string, .required)
-      .field("password", .string, .required)
-      .unique(on: "username")
+      .field(User.v20210114.name, .string, .required)
+      .field(User.v20210114.username, .string, .required)
+      .field(User.v20210114.password, .string, .required)
+      .unique(on: User.v20210114.username)
       .create()
   }
   
   func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("users").delete()
+    database.schema(User.v20210114.schemaName).delete()
+  }
+}
+
+extension User {
+  enum v20210114 {
+    static let schemaName = "users"
+    static let id = FieldKey(stringLiteral: "id")
+    static let name = FieldKey(stringLiteral: "name")
+    static let username = FieldKey(stringLiteral: "username")
+    static let password = FieldKey(stringLiteral: "password")
   }
 }
