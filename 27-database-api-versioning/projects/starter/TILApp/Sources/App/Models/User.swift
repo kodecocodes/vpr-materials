@@ -30,18 +30,18 @@ import Fluent
 import Vapor
 
 final class User: Model, Content {
-  static let schema = "users"
+  static let schema = User.v20210113.schemaName
   
   @ID
   var id: UUID?
   
-  @Field(key: "name")
+  @Field(key: User.v20210113.name)
   var name: String
   
-  @Field(key: "username")
+  @Field(key: User.v20210113.username)
   var username: String
 
-  @Field(key: "password")
+  @Field(key: User.v20210113.password)
   var password: String
   
   @Children(for: \.$user)
@@ -105,3 +105,4 @@ extension User: ModelAuthenticatable {
 
 extension User: ModelSessionAuthenticatable {}
 extension User: ModelCredentialsAuthenticatable {}
+
