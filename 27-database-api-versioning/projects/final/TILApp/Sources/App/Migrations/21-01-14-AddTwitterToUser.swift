@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentPostgreSQL
-import Vapor
+import Fluent
 
-struct MakeCategoriesUnique: Migration {
-  
-  typealias Database = PostgreSQLDatabase
-  
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.update(Category.self, on: connection) { builder in
-      builder.unique(on: \.name)
-    }
+struct AddTwitterURLToUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(User.v20210113.schemaName)
+      .field(User.v20210114.twitterURL, .string)
+      .update()
   }
-  
-  static func revert(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.update(Category.self, on: connection) { builder in
-      builder.deleteUnique(from: \.name)
-    }
+
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(User.v20210113.schemaName)
+      .deleteField(User.v20210114.twitterURL)
+      .update()
   }
 }

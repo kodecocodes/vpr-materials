@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentPostgreSQL
+import Fluent
 import Vapor
 
-struct AddTwitterURLToUser: Migration {
-  
-  typealias Database = PostgreSQLDatabase
-  
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.update(User.self, on: connection) { builder in
-      builder.field(for: \.twitterURL)
+struct CreateAdminUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    let passwordHash: String
+    do {
+      passwordHash = try Bcrypt.hash("password")
+    } catch {
+      return database.eventLoop.future(error: error)
     }
+    let user = User(name: "Admin", username: "admin", password: passwordHash)
+    return user.save(on: database)
   }
-  
-  static func revert(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.update(User.self, on: connection) { builder in
-      builder.deleteField(for: \.twitterURL)
-    }
+
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    User.query(on: database).filter(\.$username == "admin").delete()
   }
 }

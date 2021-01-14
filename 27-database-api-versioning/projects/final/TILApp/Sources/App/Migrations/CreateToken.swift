@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,28 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Routing
-import Vapor
+import Fluent
 
-/// Called after your application has initialized.
-///
-/// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#bootswift)
-public func boot(_ app: Application) throws {
-  // your code here
+struct CreateToken: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Token.v20210113.schemaName)
+      .id()
+      .field(Token.v20210113.value, .string, .required)
+      .field(Token.v20210113.userID, .uuid, .required, .references(User.v20210113.schemaName, User.v20210113.id, onDelete: .cascade))
+      .create()
+  }
+
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Token.v20210113.schemaName).delete()
+  }
 }
+
+extension Token {
+  enum v20210113 {
+    static let schemaName = "tokens"
+    static let id = FieldKey(stringLiteral: "id")
+    static let value = FieldKey(stringLiteral: "value")
+    static let userID = FieldKey(stringLiteral: "userID")
+  }
+}
+

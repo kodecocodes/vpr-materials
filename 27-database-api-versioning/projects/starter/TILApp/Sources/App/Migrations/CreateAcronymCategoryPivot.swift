@@ -30,14 +30,23 @@ import Fluent
 
 struct CreateAcronymCategoryPivot: Migration {
   func prepare(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("acronym-category-pivot")
+    database.schema(AcronymCategoryPivot.v20210113.schemaName)
       .id()
-      .field("acronymID", .uuid, .required, .references("acronyms", "id", onDelete: .cascade))
-      .field("categoryID", .uuid, .required, .references("categories", "id", onDelete: .cascade))
+      .field(AcronymCategoryPivot.v20210113.acronymID, .uuid, .required, .references("acronyms", "id", onDelete: .cascade))
+      .field(AcronymCategoryPivot.v20210113.categoryID, .uuid, .required, .references(Category.v20210113.schemaName, Category.v20210113.id, onDelete: .cascade))
       .create()
   }
   
   func revert(on database: Database) -> EventLoopFuture<Void> {
-    database.schema("acronym-category-pivot").delete()
+    database.schema(AcronymCategoryPivot.v20210113.schemaName).delete()
+  }
+}
+
+extension AcronymCategoryPivot {
+  enum v20210113 {
+    static let schemaName = "acronym-category-pivot"
+    static let id = FieldKey(stringLiteral: "id")
+    static let acronymID = FieldKey(stringLiteral: "acronymID")
+    static let categoryID = FieldKey(stringLiteral: "categoryID")
   }
 }

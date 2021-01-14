@@ -26,14 +26,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Fluent
 
+struct MakeCategoriesUnique: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Category.v20210113.schemaName)
+      .unique(on: Category.v20210113.name)
+      .update()
+  }
 
-import App
-import Vapor
-
-var env = try Environment.detect()
-try LoggingSystem.bootstrap(from: &env)
-let app = Application(env)
-defer { app.shutdown() }
-try configure(app)
-try app.run()
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Category.v20210113.schemaName)
+      .deleteUnique(on: Category.v20210113.name)
+      .update()
+  }
+}

@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import XCTest
+import Fluent
 
-@testable import AppTests
+struct CreateAcronym: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Acronym.v20210114.schemaName)
+      .id()
+      .field(Acronym.v20210114.short, .string, .required)
+      .field(Acronym.v20210114.long, .string, .required)
+      .field(Acronym.v20210114.userID, .uuid, .required, .references(User.v20210113.schemaName, User.v20210113.id))
+      .create()
+  }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema(Acronym.v20210114.schemaName).delete()
+  }
+}
 
-XCTMain([
-    testCase(AcronymTests.allTests),
-    testCase(CategoryTests.allTests),
-    testCase(UserTests.allTests),
-])
+extension Acronym {
+  enum v20210114 {
+    static let schemaName = "acronyms"
+    static let id = FieldKey(stringLiteral: "id")
+    static let short = FieldKey(stringLiteral: "short")
+    static let long = FieldKey(stringLiteral: "long")
+    static let userID = FieldKey(stringLiteral: "userID")
+  }
+}

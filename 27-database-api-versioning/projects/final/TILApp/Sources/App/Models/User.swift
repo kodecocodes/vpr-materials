@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,40 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import Foundation
+import Fluent
 import Vapor
-import FluentPostgreSQL
-import Authentication
 
-final class User: Codable {
+final class User: Model, Content {
+  static let schema = User.v20210113.schemaName
+  
+  @ID
   var id: UUID?
+  
+  @Field(key: User.v20210113.name)
   var name: String
+  
+  @Field(key: User.v20210113.username)
   var username: String
-  var password: String
-  var twitterURL: String?
 
-  init(name: String, username: String, password: String, twitterURL: String? = nil) {
+  @Field(key: User.v20210113.password)
+  var password: String
+  
+  @Children(for: \.$user)
+  var acronyms: [Acronym]
+
+  @Field(key: User.v20210114.twitterURL)
+  var twitterURL: String?
+  
+  init() {}
+  
+  init(id: UUID? = nil, name: String, username: String, password: String, twitterURL: String? = nil) {
     self.name = name
     self.username = username
     self.password = password
     self.twitterURL = twitterURL
   }
 
-  final class Public: Codable {
+  final class Public: Content {
     var id: UUID?
     var name: String
     var username: String
@@ -57,43 +71,21 @@ final class User: Codable {
     }
   }
 
-  final class PublicV2: Codable {
+  final class PublicV2: Content {
     var id: UUID?
     var name: String
     var username: String
     var twitterURL: String?
 
-    init(id: UUID?, name: String, username: String, twitterURL: String? = nil) {
+    init(id: UUID?,
+         name: String,
+         username: String,
+         twitterURL: String? = nil) {
       self.id = id
       self.name = name
       self.username = username
       self.twitterURL = twitterURL
     }
-  }
-}
-
-extension User: PostgreSQLUUIDModel {}
-extension User: Content {}
-
-extension User: Migration {
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.create(self, on: connection) { builder in
-      builder.field(for: \.id, isIdentifier: true)
-      builder.field(for: \.name)
-      builder.field(for: \.username)
-      builder.field(for: \.password)
-      builder.unique(on: \.username)
-    }
-  }
-}
-
-extension User: Parameter {}
-extension User.Public: Content {}
-extension User.PublicV2: Content {}
-
-extension User {
-  var acronyms: Children<User, Acronym> {
-    return children(\.userID)
   }
 }
 
@@ -107,46 +99,48 @@ extension User {
   }
 }
 
-extension Future where T: User {
-  func convertToPublic() -> Future<User.Public> {
-    return self.map(to: User.Public.self) { user in
+extension EventLoopFuture where Value: User {
+  func convertToPublic() -> EventLoopFuture<User.Public> {
+    return self.map { user in
       return user.convertToPublic()
     }
   }
 
-  func convertToPublicV2() -> Future<User.PublicV2> {
-    return self.map(to: User.PublicV2.self) { user in
+  func convertToPublicV2() -> EventLoopFuture<User.PublicV2> {
+    return self.map { user in
       return user.convertToPublicV2()
     }
   }
 }
 
-extension User: BasicAuthenticatable {
-  static let usernameKey: UsernameKey = \User.username
-  static let passwordKey: PasswordKey = \User.password
-}
-
-extension User: TokenAuthenticatable {
-  typealias TokenType = Token
-}
-
-struct AdminUser: Migration {
-
-  typealias Database = PostgreSQLDatabase
-
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    let password = try? BCrypt.hash("password")
-    guard let hashedPassword = password else {
-      fatalError("Failed to create admin user")
-    }
-    let user = User(name: "Admin", username: "admin", password: hashedPassword)
-    return user.save(on: connection).transform(to: ())
+extension Collection where Element: User {
+  func convertToPublic() -> [User.Public] {
+    return self.map { $0.convertToPublic() }
   }
 
-  static func revert(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Future.map(on: connection) {}
+  func convertToPublicV2() -> [User.PublicV2] {
+    return self.map { $0.convertToPublicV2() }
   }
 }
 
-extension User: PasswordAuthenticatable {}
-extension User: SessionAuthenticatable {}
+extension EventLoopFuture where Value == Array<User> {
+  func convertToPublic() -> EventLoopFuture<[User.Public]> {
+    return self.map { $0.convertToPublic() }
+  }
+
+  func convertToPublicV2() -> EventLoopFuture<[User.PublicV2]> {
+    return self.map { $0.convertToPublicV2() }
+  }
+}
+
+extension User: ModelAuthenticatable {
+  static let usernameKey = \User.$username
+  static let passwordHashKey = \User.$password
+
+  func verify(password: String) throws -> Bool {
+    try Bcrypt.verify(password, created: self.password)
+  }
+}
+
+extension User: ModelSessionAuthenticatable {}
+extension User: ModelCredentialsAuthenticatable {}
