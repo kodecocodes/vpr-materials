@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -30,91 +30,116 @@ import Vapor
 import Fluent
 
 struct AcronymsController: RouteCollection {
-  func boot(router: Router) throws {
-    let acronymsRoutes = router.grouped("api", "acronyms")
+  func boot(routes: RoutesBuilder) throws {
+    let acronymsRoutes = routes.grouped("api", "acronyms")
     acronymsRoutes.get(use: getAllHandler)
-    acronymsRoutes.post(Acronym.self, use: createHandler)
-    acronymsRoutes.get(Acronym.parameter, use: getHandler)
-    acronymsRoutes.put(Acronym.parameter, use: updateHandler)
-    acronymsRoutes.delete(Acronym.parameter, use: deleteHandler)
+    acronymsRoutes.post(use: createHandler)
+    acronymsRoutes.get(":acronymID", use: getHandler)
+    acronymsRoutes.put(":acronymID", use: updateHandler)
+    acronymsRoutes.delete(":acronymID", use: deleteHandler)
     acronymsRoutes.get("search", use: searchHandler)
     acronymsRoutes.get("first", use: getFirstHandler)
     acronymsRoutes.get("sorted", use: sortedHandler)
-    acronymsRoutes.get(Acronym.parameter, "user", use: getUserHandler)
-    acronymsRoutes.post(Acronym.parameter, "categories", Category.parameter, use: addCategoriesHandler)
-    acronymsRoutes.get(Acronym.parameter, "categories", use: getCategoriesHandler)
-    acronymsRoutes.delete(Acronym.parameter, "categories", Category.parameter, use: removeCategoriesHandler)
+    acronymsRoutes.get(":acronymID", "user", use: getUserHandler)
+    acronymsRoutes.post(":acronymID", "categories", ":categoryID", use: addCategoriesHandler)
+    acronymsRoutes.get(":acronymID", "categories", use: getCategoriesHandler)
+    acronymsRoutes.delete(":acronymID", "categories", ":categoryID", use: removeCategoriesHandler)
+  }
+  
+  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+    Acronym.query(on: req.db).all()
+  }
+  
+  func createHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    let data = try req.content.decode(CreateAcronymData.self)
+    let acronym = Acronym(short: data.short, long: data.long, userID: data.userID)
+    return acronym.save(on: req.db).map { acronym }
   }
 
-  func getAllHandler(_ req: Request) throws -> Future<[Acronym]> {
-    return Acronym.query(on: req).all()
+  func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db)
+    .unwrap(or: Abort(.notFound))
   }
 
-  func createHandler(_ req: Request, acronym: Acronym) throws -> Future<Acronym> {
-    return acronym.save(on: req)
-  }
-
-  func getHandler(_ req: Request) throws -> Future<Acronym> {
-    return try req.parameters.next(Acronym.self)
-  }
-
-  func updateHandler(_ req: Request) throws -> Future<Acronym> {
-    return try flatMap(to: Acronym.self,
-                       req.parameters.next(Acronym.self),
-                       req.content.decode(Acronym.self)) { acronym, updatedAcronym in
-      acronym.short = updatedAcronym.short
-      acronym.long = updatedAcronym.long
-      acronym.userID = updatedAcronym.userID
-      return acronym.save(on: req)
+  func updateHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    let updateData = try req.content.decode(CreateAcronymData.self)
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db)
+      .unwrap(or: Abort(.notFound)).flatMap { acronym in
+        acronym.short = updateData.short
+        acronym.long = updateData.long
+        acronym.$user.id = updateData.userID
+        return acronym.save(on: req.db).map {
+          acronym
+        }
     }
   }
 
-  func deleteHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    return try req.parameters.next(Acronym.self).delete(on: req).transform(to: .noContent)
+  func deleteHandler(_ req: Request)
+    throws -> EventLoopFuture<HTTPStatus> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db)
+      .unwrap(or: Abort(.notFound))
+      .flatMap { acronym in
+        acronym.delete(on: req.db)
+          .transform(to: .noContent)
+    }
   }
 
-  func searchHandler(_ req: Request) throws -> Future<[Acronym]> {
-    guard let searchTerm = req.query[String.self, at: "term"] else {
+  func searchHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+    guard let searchTerm = req
+      .query[String.self, at: "term"] else {
       throw Abort(.badRequest)
     }
-    return Acronym.query(on: req).group(.or) { or in
-      or.filter(\.short == searchTerm)
-      or.filter(\.long == searchTerm)
-      }.all()
+    return Acronym.query(on: req.db).group(.or) { or in
+      or.filter(\.$short == searchTerm)
+      or.filter(\.$long == searchTerm)
+    }.all()
   }
 
-  func getFirstHandler(_ req: Request) throws -> Future<Acronym> {
-    return Acronym.query(on: req).first().unwrap(or: Abort(.notFound))
+  func getFirstHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+    return Acronym.query(on: req.db)
+      .first()
+      .unwrap(or: Abort(.notFound))
   }
 
-  func sortedHandler(_ req: Request) throws -> Future<[Acronym]> {
-    return Acronym.query(on: req).sort(\.short, .ascending).all()
+  func sortedHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+    return Acronym.query(on: req.db).sort(\.$short, .ascending).all()
   }
-
-  func getUserHandler(_ req: Request) throws -> Future<User> {
-    return try req.parameters.next(Acronym.self).flatMap(to: User.self) { acronym in
-      acronym.user.get(on: req)
+  
+  func getUserHandler(_ req: Request) throws -> EventLoopFuture<User> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db)
+    .unwrap(or: Abort(.notFound))
+    .flatMap { acronym in
+      acronym.$user.get(on: req.db)
     }
   }
-
-  func addCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    return try flatMap(to: HTTPStatus.self, req.parameters.next(Acronym.self),
-                       req.parameters.next(Category.self)) { acronym, category in
-      return acronym.categories.attach(category, on: req).transform(to: .created)
+  
+  func addCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound))
+    let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound))
+    return acronymQuery.and(categoryQuery).flatMap { acronym, category in
+      acronym.$categories.attach(category, on: req.db).transform(to: .created)
     }
   }
-
-  func getCategoriesHandler(_ req: Request) throws -> Future<[Category]> {
-    return try req.parameters.next(Acronym.self).flatMap(to: [Category].self) { acronym in
-      try acronym.categories.query(on: req).all()
+  
+  func getCategoriesHandler(_ req: Request) throws -> EventLoopFuture<[Category]> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db)
+    .unwrap(or: Abort(.notFound))
+    .flatMap { acronym in
+      acronym.$categories.query(on: req.db).all()
     }
   }
-
-  func removeCategoriesHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    return try flatMap(to: HTTPStatus.self, req.parameters.next(Acronym.self),
-                       req.parameters.next(Category.self)) { acronym, category in
-      return acronym.categories.detach(category, on: req).transform(to: .noContent)
+  
+  func removeCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound))
+    let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound))
+    return acronymQuery.and(categoryQuery).flatMap { acronym, category in
+      acronym.$categories.detach(category, on: req.db).transform(to: .noContent)
     }
   }
 }
 
+struct CreateAcronymData: Content {
+  let short: String
+  let long: String
+  let userID: UUID
+}
