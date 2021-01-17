@@ -45,6 +45,16 @@ enum Keychain {
     return SecItemAdd(query as CFDictionary, nil)
   }
 
+  @discardableResult
+  static func delete(key: String) -> OSStatus {
+    let query = [
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key
+    ] as [CFString: Any]
+
+    return SecItemDelete(query as CFDictionary)
+  }
+
   static func load(key: String) -> String? {
     let query = [
       kSecClass: kSecClassGenericPassword,

@@ -44,6 +44,8 @@ class Auth {
     set {
       if let newToken = newValue {
         Keychain.save(key: Auth.keychainKey, data: newToken)
+      } else {
+        Keychain.delete(key: Auth.keychainKey)
       }
     }
   }
