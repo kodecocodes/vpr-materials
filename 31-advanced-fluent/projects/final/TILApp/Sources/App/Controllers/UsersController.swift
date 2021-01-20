@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,109 +27,84 @@
 /// THE SOFTWARE.
 
 import Vapor
-import Crypto
 import Fluent
 
 struct UsersController: RouteCollection {
-  func boot(router: Router) throws {
-    let usersRoute = router.grouped("api", "users")
+  func boot(routes: RoutesBuilder) throws {
+    let usersRoute = routes.grouped("api", "users")
     usersRoute.get(use: getAllHandler)
-    usersRoute.get(User.parameter, use: getHandler)
-    usersRoute.get(User.parameter, "acronyms", use: getAcronymsHandler)
-    usersRoute.get("acronyms", use: getAllUsersWithAcronyms)
+    usersRoute.get(":userID", use: getHandler)
+    usersRoute.get(":userID", "acronyms", use: getAcronymsHandler)
+    usersRoute.get("mostRecentAcronym", use: getUserWithMostRecentAcronym)
 
-    let basicAuthMiddleware = User.basicAuthMiddleware(using: BCryptDigest())
+    let basicAuthMiddleware = User.authenticator()
     let basicAuthGroup = usersRoute.grouped(basicAuthMiddleware)
     basicAuthGroup.post("login", use: loginHandler)
 
-    let tokenAuthMiddleware = User.tokenAuthMiddleware()
-    let guardAuthMiddleware = User.guardAuthMiddleware()
+    let tokenAuthMiddleware = Token.authenticator()
+    let guardAuthMiddleware = User.guardMiddleware()
     let tokenAuthGroup = usersRoute.grouped(tokenAuthMiddleware, guardAuthMiddleware)
-    tokenAuthGroup.post(User.self, use: createHandler)
-    tokenAuthGroup.delete(User.parameter, use: deleteHandler)
-    tokenAuthGroup.post(UUID.parameter, "restore", use: restoreHandler)
-    tokenAuthGroup.delete(User.parameter, "force", use: forceDeleteHandler)
+    tokenAuthGroup.post(use: createHandler)
+    tokenAuthGroup.delete(":userID", use: deleteHandler)
+    tokenAuthGroup.post(":userID", "restore", use: restoreHandler)
+    tokenAuthGroup.delete(":userID", "force", use: forceDeleteHandler)
   }
 
-  func createHandler(_ req: Request, user: User) throws -> Future<User.Public> {
-    user.password = try BCrypt.hash(user.password)
-    return user.save(on: req).convertToPublic()
+  func createHandler(_ req: Request) throws -> EventLoopFuture<User.Public> {
+    let user = try req.content.decode(User.self)
+    user.password = try Bcrypt.hash(user.password)
+    return user.save(on: req.db).map { user.convertToPublic() }
   }
 
-  func getAllHandler(_ req: Request) throws -> Future<[User.Public]> {
-    return User.query(on: req).decode(data: User.Public.self).all()
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[User.Public]> {
+    User.query(on: req.db).all().convertToPublic()
   }
 
-  func getHandler(_ req: Request) throws -> Future<User.Public> {
-    return try req.parameters.next(User.self).convertToPublic()
+  func getHandler(_ req: Request) -> EventLoopFuture<User.Public> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).convertToPublic()
   }
 
-  func getAcronymsHandler(_ req: Request) throws -> Future<[Acronym]> {
-    return try req.parameters.next(User.self).flatMap(to: [Acronym].self) { user in
-      try user.acronyms.query(on: req).all()
+  func getAcronymsHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      user.$acronyms.get(on: req.db)
     }
   }
 
-  func loginHandler(_ req: Request) throws -> Future<Token> {
-    let user = try req.requireAuthenticated(User.self)
+  func loginHandler(_ req: Request) throws -> EventLoopFuture<Token> {
+    let user = try req.auth.require(User.self)
     let token = try Token.generate(for: user)
-    return token.save(on: req)
+    return token.save(on: req.db).map { token }
   }
 
-  func deleteHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    let requestUser = try req.requireAuthenticated(User.self)
+  func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    let requestUser = try req.auth.require(User.self)
     guard requestUser.userType == .admin else {
       throw Abort(.forbidden)
     }
-
-    return try req.parameters.next(User.self)
-      .delete(on: req)
-      .transform(to: .noContent)
+    return User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      user.delete(on: req.db).transform(to: .noContent)
+    }
   }
 
-  func restoreHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    let requestUser = try req.requireAuthenticated(User.self)
-    guard requestUser.userType == .admin else {
-      throw Abort(.forbidden)
+  func restoreHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    let userID = try req.parameters.require("userID", as: UUID.self)
+    return User.query(on: req.db).withDeleted().filter(\.$id == userID).first().unwrap(or: Abort(.notFound)).flatMap { user in
+      user.restore(on: req.db).transform(to: .ok)
     }
+  }
 
-    let userID = try req.parameters.next(UUID.self)
-    return User.query(on: req, withSoftDeleted: true)
-      .filter(\.id == userID)
+  func forceDeleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      user.delete(force: true, on: req.db).transform(to: .noContent)
+    }
+  }
+
+  func getUserWithMostRecentAcronym(_ req: Request) -> EventLoopFuture<User.Public> {
+    User.query(on: req.db)
+      .join(Acronym.self, on: \Acronym.$user.$id == \User.$id)
+      .sort(Acronym.self, \Acronym.$createdAt, .descending)
       .first()
-      .flatMap(to: HTTPStatus.self) { user in
-        guard let user = user else {
-          throw Abort(.notFound)
-        }
-        return user.restore(on: req).transform(to: .ok)
-    }
+      .unwrap(or: Abort(.internalServerError))
+      .convertToPublic()
   }
-
-  func forceDeleteHandler(_ req: Request) throws -> Future<HTTPStatus> {
-    let requestUser = try req.requireAuthenticated(User.self)
-    guard requestUser.userType == .admin else {
-      throw Abort(.forbidden)
-    }
-
-    return try req.parameters.next(User.self).flatMap(to: HTTPStatus.self) { user in
-      user.delete(force: true, on: req).transform(to: .noContent)
-    }
-  }
-
-  func getAllUsersWithAcronyms(_ req: Request) throws -> Future<[UserWithAcronyms]> {
-    return User.query(on: req).all().flatMap(to: [UserWithAcronyms].self) { users in
-      try users.map { user in
-        try user.acronyms.query(on: req).all().map { acronyms in
-          UserWithAcronyms(id: user.id, name: user.name, username: user.username, acronyms: acronyms)
-        }
-        }.flatten(on: req)
-    }
-  }
-}
-
-struct UserWithAcronyms: Content {
-  let id: UUID?
-  let name: String
-  let username: String
-  let acronyms: [Acronym]
 }

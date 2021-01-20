@@ -26,14 +26,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Fluent
 
-
-import App
-import Vapor
-
-var env = try Environment.detect()
-try LoggingSystem.bootstrap(from: &env)
-let app = Application(env)
-defer { app.shutdown() }
-try configure(app)
-try app.run()
+struct CreateUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.enum("userType")
+      .case("admin")
+      .case("standard")
+      .case("restriced")
+      .create()
+      .flatMap { userType in
+        database.schema("users")
+          .id()
+          .field("name", .string, .required)
+          .field("username", .string, .required)
+          .field("password", .string, .required)
+          .field("deleted_at", .datetime)
+          .field("userType", userType, .required)
+          .unique(on: "username")
+          .create()
+    }
+  }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("users").delete()
+  }
+}

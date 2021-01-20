@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,46 +27,40 @@
 /// THE SOFTWARE.
 
 import Vapor
-import FluentPostgreSQL
+import Fluent
 
-final class Acronym: Codable {
-  var id: Int?
+final class Acronym: Model {
+  static let schema = "acronyms"
+  
+  @ID
+  var id: UUID?
+  
+  @Field(key: "short")
   var short: String
+  
+  @Field(key: "long")
   var long: String
-  var userID: User.ID
-  var createdAt: Date?
-  var updatedAt: Date?
+  
+  @Parent(key: "userID")
+  var user: User
+  
+  @Siblings(through: AcronymCategoryPivot.self, from: \.$acronym, to: \.$category)
+  var categories: [Category]
 
-  init(short: String, long: String, userID: User.ID) {
+  @Timestamp(key: "created_at", on: .create)
+  var createdAt: Date?
+
+  @Timestamp(key: "updated_at", on: .update)
+  var updatedAt: Date?
+  
+  init() {}
+  
+  init(id: UUID? = nil, short: String, long: String, userID: User.IDValue) {
+    self.id = id
     self.short = short
     self.long = long
-    self.userID = userID
+    self.$user.id = userID
   }
-}
-
-extension Acronym: PostgreSQLModel {
-  static let createdAtKey: TimestampKey? = \.createdAt
-  static let updatedAtKey: TimestampKey? = \.updatedAt
 }
 
 extension Acronym: Content {}
-extension Acronym: Parameter {}
-
-extension Acronym {
-  var user: Parent<Acronym, User> {
-    return parent(\.userID)
-  }
-
-  var categories: Siblings<Acronym, Category, AcronymCategoryPivot> {
-    return siblings()
-  }
-}
-
-extension Acronym: Migration {
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.create(self, on: connection) { builder in
-      try addProperties(to: builder)
-      builder.reference(from: \.userID, to: \User.id)
-    }
-  }
-}

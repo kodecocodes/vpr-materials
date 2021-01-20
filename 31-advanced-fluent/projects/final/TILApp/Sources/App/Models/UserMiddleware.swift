@@ -26,14 +26,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-
-
-import App
+import Fluent
 import Vapor
 
-var env = try Environment.detect()
-try LoggingSystem.bootstrap(from: &env)
-let app = Application(env)
-defer { app.shutdown() }
-try configure(app)
-try app.run()
+struct UserMiddleware: ModelMiddleware {
+  func create(model: User, on db: Database, next: AnyModelResponder) -> EventLoopFuture<Void> {
+    User.query(on: db).filter(\.$username == model.username).count().flatMap { count in
+      guard count == 0 else {
+        return db.eventLoop.future(error: Abort(.badRequest, reason: "Username already exists"))
+      }
+      return next.create(model, on: db).map {
+        db.logger.debug("Created user with username \(model.username)")
+      }
+    }
+  }
+}
