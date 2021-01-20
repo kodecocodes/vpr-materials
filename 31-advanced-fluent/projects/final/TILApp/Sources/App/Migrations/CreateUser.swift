@@ -33,7 +33,7 @@ struct CreateUser: Migration {
     database.enum("userType")
       .case("admin")
       .case("standard")
-      .case("restriced")
+      .case("restricted")
       .create()
       .flatMap { userType in
         database.schema("users")
