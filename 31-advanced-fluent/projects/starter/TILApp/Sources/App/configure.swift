@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +26,20 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentPostgreSQL
+import Fluent
+import FluentPostgresDriver
 import Vapor
 import Leaf
-import Authentication
 
-/// Called before your application initializes.
-public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
-  /// Register providers first
-  try services.register(FluentPostgreSQLProvider())
-  try services.register(LeafProvider())
-  try services.register(AuthenticationProvider())
-
-  /// Register routes to the router
-  let router = EngineRouter.default()
-  try routes(router)
-  services.register(router, as: Router.self)
-
-  /// Register middleware
-  var middlewares = MiddlewareConfig() // Create _empty_ middleware config
-  middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
-  middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
-  middlewares.use(SessionsMiddleware.self)
-  services.register(middlewares)
-
-  // Configure a database
-  var databases = DatabasesConfig()
-  let hostname = Environment.get("DATABASE_HOSTNAME") ?? "localhost"
-  let username = Environment.get("DATABASE_USER") ?? "vapor"
-  let password = Environment.get("DATABASE_PASSWORD") ?? "password"
+// configures your application
+public func configure(_ app: Application) throws {
+  // uncomment to serve files from /Public folder
+  app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+  app.middleware.use(app.sessions.middleware)
+  
   let databaseName: String
   let databasePort: Int
-  if (env == .testing) {
+  if (app.environment == .testing) {
     databaseName = "vapor-test"
     if let testPort = Environment.get("DATABASE_PORT") {
       databasePort = Int(testPort) ?? 5433
@@ -65,34 +47,31 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
       databasePort = 5433
     }
   } else {
-    databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+    databaseName = "vapor_database"
     databasePort = 5432
   }
 
-  let databaseConfig = PostgreSQLDatabaseConfig(
-    hostname: hostname,
+  app.databases.use(.postgres(
+    hostname: Environment.get("DATABASE_HOST") ?? "localhost",
     port: databasePort,
-    username: username,
-    database: databaseName,
-    password: password)
-  let database = PostgreSQLDatabase(config: databaseConfig)
-  databases.add(database: database, as: .psql)
-  services.register(databases)
+    username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
+    password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
+    database: Environment.get("DATABASE_NAME") ?? databaseName
+  ), as: .psql)
+  
+  app.migrations.add(CreateUser())
+  app.migrations.add(CreateAcronym())
+  app.migrations.add(CreateCategory())
+  app.migrations.add(CreateAcronymCategoryPivot())
+  app.migrations.add(CreateToken())
+  app.migrations.add(CreateAdminUser())
+  
+  app.logger.logLevel = .debug
+  
+  try app.autoMigrate().wait()
 
-  /// Configure migrations
-  var migrations = MigrationConfig()
-  migrations.add(model: User.self, database: .psql)
-  migrations.add(model: Acronym.self, database: .psql)
-  migrations.add(model: Category.self, database: .psql)
-  migrations.add(model: AcronymCategoryPivot.self, database: .psql)
-  migrations.add(model: Token.self, database: .psql)
-  migrations.add(migration: AdminUser.self, database: .psql)
-  services.register(migrations)
-
-  var commandConfig = CommandConfig.default()
-  commandConfig.useFluentCommands()
-  services.register(commandConfig)
-
-  config.prefer(LeafRenderer.self, for: ViewRenderer.self)
-  config.prefer(MemoryKeyedCache.self, for: KeyedCache.self)
+  app.views.use(.leaf)
+  
+  // register routes
+  try routes(app)
 }
