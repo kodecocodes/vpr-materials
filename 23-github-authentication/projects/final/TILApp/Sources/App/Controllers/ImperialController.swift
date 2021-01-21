@@ -120,7 +120,8 @@ struct GitHubUserInfo: Content {
 extension GitHub {
   static func getUser(on request: Request) throws -> EventLoopFuture<GitHubUserInfo> {
     var headers = HTTPHeaders()
-    headers.bearerAuthorization = try BearerAuthorization(token: request.accessToken())
+    try headers.add(name: .authorization, value: "token \(request.accessToken())")
+    headers.add(name: .userAgent, value: "vapor")
     
     let githubUserAPIURL: URI = "https://api.github.com/user"
     return request.client.get(githubUserAPIURL, headers: headers).flatMapThrowing { response in
