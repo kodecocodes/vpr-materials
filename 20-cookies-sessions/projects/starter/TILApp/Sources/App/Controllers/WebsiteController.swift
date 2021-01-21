@@ -29,7 +29,6 @@
 import Vapor
 
 struct WebsiteController: RouteCollection {
-
   func boot(routes: RoutesBuilder) throws {
     routes.get(use: indexHandler)
     routes.get("acronyms", ":acronymID", use: acronymHandler)
@@ -114,7 +113,7 @@ struct WebsiteController: RouteCollection {
       guard let id = acronym.id else {
         return req.eventLoop.future(error: Abort(.internalServerError))
       }
-      var categorySaves = [EventLoopFuture<Void>]()
+      var categorySaves: [EventLoopFuture<Void>] = []
       for category in data.categories ?? [] {
         categorySaves.append(Category.addCategory(category, to: acronym, on: req))
       }
@@ -156,7 +155,7 @@ struct WebsiteController: RouteCollection {
         let categoriesToAdd = newSet.subtracting(existingSet)
         let categoriesToRemove = existingSet.subtracting(newSet)
 
-        var categoryResults = [EventLoopFuture<Void>]()
+        var categoryResults: [EventLoopFuture<Void>] = []
         for newCategory in categoriesToAdd {
           categoryResults.append(Category.addCategory(newCategory, to: acronym, on: req))
         }

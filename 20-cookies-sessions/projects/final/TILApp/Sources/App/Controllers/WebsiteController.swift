@@ -123,9 +123,11 @@ struct WebsiteController: RouteCollection {
 
     let expectedToken = req.session.data["CSRF_TOKEN"]
     req.session.data["CSRF_TOKEN"] = nil
-    guard let csrfToken = data.csrfToken,
-      expectedToken == csrfToken else {
-        throw Abort(.badRequest)
+    guard 
+      let csrfToken = data.csrfToken,
+      expectedToken == csrfToken 
+    else {
+      throw Abort(.badRequest)
     }
 
     let acronym = try Acronym(short: data.short, long: data.long, userID: user.requireID())
@@ -133,7 +135,7 @@ struct WebsiteController: RouteCollection {
       guard let id = acronym.id else {
         return req.eventLoop.future(error: Abort(.internalServerError))
       }
-      var categorySaves = [EventLoopFuture<Void>]()
+      var categorySaves: [EventLoopFuture<Void>] = []
       for category in data.categories ?? [] {
         categorySaves.append(Category.addCategory(category, to: acronym, on: req))
       }
@@ -175,7 +177,7 @@ struct WebsiteController: RouteCollection {
         let categoriesToAdd = newSet.subtracting(existingSet)
         let categoriesToRemove = existingSet.subtracting(newSet)
 
-        var categoryResults = [EventLoopFuture<Void>]()
+        var categoryResults: [EventLoopFuture<Void>] = []
         for newCategory in categoriesToAdd {
           categoryResults.append(Category.addCategory(newCategory, to: acronym, on: req))
         }

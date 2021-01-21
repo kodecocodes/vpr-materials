@@ -29,7 +29,6 @@
 import Vapor
 
 struct UsersController: RouteCollection {
-
   func boot(routes: RoutesBuilder) throws {
     let usersRoute = routes.grouped("api", "users")
     usersRoute.get(use: getAllHandler)
