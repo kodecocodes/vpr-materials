@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,32 +26,36 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import ImperialGoogle
 import Vapor
-import Imperial
-import Authentication
+import Fluent
 
 struct ImperialController: RouteCollection {
-  func boot(router: Router) throws {
-    guard let googleCallbackURL = Environment.get("GOOGLE_CALLBACK_URL") else {
+  func boot(routes: RoutesBuilder) throws {
+    guard let googleCallbackURL =
+            Environment.get("GOOGLE_CALLBACK_URL") else {
       fatalError("Google callback URL not set")
     }
-    try router.oAuth(from: Google.self, authenticate: "login-google", callback: googleCallbackURL,
-                     scope: ["profile", "email"], completion: processGoogleLogin)
+    try routes.oAuth(
+      from: Google.self,
+      authenticate: "login-google",
+      callback: googleCallbackURL,
+      scope: ["profile", "email"],
+      completion: processGoogleLogin)
   }
 
-  func processGoogleLogin(request: Request, token: String) throws -> Future<ResponseEncodable> {
-    return try Google.getUser(on: request).flatMap(to: ResponseEncodable.self) { userInfo in
-      return User.query(on: request).filter(\.username == userInfo.email)
-                 .first().flatMap(to: ResponseEncodable.self) { foundUser in
+  func processGoogleLogin(request: Request, token: String) throws -> EventLoopFuture<ResponseEncodable> {
+    return try Google.getUser(on: request).flatMap { userInfo in
+      return User.query(on: request.db).filter(\.$username == userInfo.email).first().flatMap { foundUser in
         guard let existingUser = foundUser else {
           let user = User(name: userInfo.name, username: userInfo.email, password: UUID().uuidString)
-          return user.save(on: request).map(to: ResponseEncodable.self) { user in
-            try request.authenticateSession(user)
+          return user.save(on: request.db).map {
+            request.session.authenticate(user)
             return request.redirect(to: "/")
           }
         }
-        try request.authenticateSession(existingUser)
-        return request.future(request.redirect(to: "/"))
+        request.session.authenticate(existingUser)
+        return request.eventLoop.future(request.redirect(to: "/"))
       }
     }
   }
@@ -63,20 +67,20 @@ struct GoogleUserInfo: Content {
 }
 
 extension Google {
-  static func getUser(on request: Request) throws -> Future<GoogleUserInfo> {
+  static func getUser(on request: Request) throws -> EventLoopFuture<GoogleUserInfo> {
     var headers = HTTPHeaders()
     headers.bearerAuthorization = try BearerAuthorization(token: request.accessToken())
 
-    let googleAPIURL = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"
-    return try request.client().get(googleAPIURL, headers: headers).map(to: GoogleUserInfo.self) { response in
-      guard response.http.status == .ok else {
-        if response.http.status == .unauthorized {
+    let googleAPIURL: URI = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json"
+    return request.client.get(googleAPIURL, headers: headers).flatMapThrowing { response in
+      guard response.status == .ok else {
+        if response.status == .unauthorized {
           throw Abort.redirect(to: "/login-google")
         } else {
           throw Abort(.internalServerError)
         }
       }
-      return try response.content.syncDecode(GoogleUserInfo.self)
+      return try response.content.decode(GoogleUserInfo.self)
     }
   }
 }
