@@ -124,8 +124,10 @@ struct WebsiteController: RouteCollection {
     
     let expectedToken = req.session.data["CSRF_TOKEN"]
     req.session.data["CSRF_TOKEN"] = nil
-    guard let csrfToken = data.csrfToken,
-          expectedToken == csrfToken else {
+    guard 
+      let csrfToken = data.csrfToken,
+      expectedToken == csrfToken 
+    else {
       throw Abort(.badRequest)
     }
     
@@ -134,7 +136,7 @@ struct WebsiteController: RouteCollection {
       guard let id = acronym.id else {
         return req.eventLoop.future(error: Abort(.internalServerError))
       }
-      var categorySaves = [EventLoopFuture<Void>]()
+      var categorySaves: [EventLoopFuture<Void>] = []
       for category in data.categories ?? [] {
         categorySaves.append(Category.addCategory(category, to: acronym, on: req))
       }
@@ -176,7 +178,7 @@ struct WebsiteController: RouteCollection {
         let categoriesToAdd = newSet.subtracting(existingSet)
         let categoriesToRemove = existingSet.subtracting(newSet)
         
-        var categoryResults = [EventLoopFuture<Void>]()
+        var categoryResults: [EventLoopFuture<Void>] = []
         for newCategory in categoriesToAdd {
           categoryResults.append(Category.addCategory(newCategory, to: acronym, on: req))
         }
@@ -362,7 +364,7 @@ extension ValidatorResults {
 
 extension ValidatorResults.ZipCode: ValidatorResult {
   var isFailure: Bool {
-    !self.isValidZipCode
+    !isValidZipCode
   }
 
   var successDescription: String? {
@@ -382,7 +384,7 @@ extension Validator where T == String {
   public static var zipCode: Validator<T> {
     Validator { input -> ValidatorResult in
       guard
-        let range = input.range(of: self.zipCodeRegex, options: [.regularExpression]),
+        let range = input.range(of: zipCodeRegex, options: [.regularExpression]),
         range.lowerBound == input.startIndex && range.upperBound == input.endIndex
       else {
         return ValidatorResults.ZipCode(isValidZipCode: false)
