@@ -1,15 +1,15 @@
 /// Copyright (c) 2019 Razeware LLC
-///
+/// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
 /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the Software is
 /// furnished to do so, subject to the following conditions:
-///
+/// 
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
-///
+/// 
 /// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
 /// distribute, sublicense, create a derivative work, and/or sell copies of the
 /// Software in any work that is designed, intended, or marketed for pedagogical or
@@ -17,7 +17,7 @@
 /// or information technology.  Permission for such use, copying, modification,
 /// merger, publication, distribution, sublicensing, creation of derivative works,
 /// or sale is expressly withheld.
-///
+/// 
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,38 +29,85 @@
 import UIKit
 
 class AcronymDetailTableViewController: UITableViewController {
-  
   // MARK: - Properties
-  var acronym: Acronym? {
+  var acronym: Acronym {
     didSet {
       updateAcronymView()
     }
   }
-  
+
   var user: User? {
     didSet {
       updateAcronymView()
     }
   }
-  
-  var categories: [Category] = [] {
+
+  var categories: [Category] {
     didSet {
       updateAcronymView()
     }
   }
-  
+
+  // MARK: - Initializers
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) is not implemented")
+  }
+
+  init?(coder: NSCoder, acronym: Acronym) {
+    self.acronym = acronym
+    self.categories = []
+    super.init(coder: coder)
+  }
+
   // MARK: - View Life Cycle
   override func viewDidLoad() {
     super.viewDidLoad()
     navigationController?.navigationBar.prefersLargeTitles = false
     getAcronymData()
   }
-  
+
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     getAcronymData()
   }
-  
+
+  // MARK: - Model Loading
+
+  func getAcronymData() {
+    guard let id = acronym.id else {
+      return
+    }
+
+    let acronymDetailRequester = AcronymRequest(acronymID: id)
+    acronymDetailRequester.getUser { [weak self] result in
+      switch result {
+      case .success(let user):
+        self?.user = user
+      case .failure:
+        let message =
+          "There was an error getting the acronym’s user"
+        ErrorPresenter.showError(message: message, on: self)
+      }
+    }
+
+    acronymDetailRequester.getCategories { [weak self] result in
+      switch result {
+      case .success(let categories):
+        self?.categories = categories
+      case .failure:
+        let message =
+          "There was an error getting the acronym’s categories"
+        ErrorPresenter.showError(message: message, on: self)
+      }
+    }
+  }
+
+  func updateAcronymView() {
+    DispatchQueue.main.async { [weak self] in
+      self?.tableView.reloadData()
+    }
+  }
+
   // MARK: - Navigation
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     if segue.identifier == "EditAcronymSegue" {
@@ -68,60 +115,28 @@ class AcronymDetailTableViewController: UITableViewController {
         return
       }
       destination.acronym = acronym
-    } else if segue.identifier == "AddToCategorySegue" {
-      guard let destination = segue.destination as? AddToCategoryTableViewController else {
-        return
-      }
-      destination.acronym = acronym
-      destination.selectedCategories = categories
     }
   }
-  
-  func getAcronymData() {
-    guard let id = acronym?.id else {
-      return
-    }
-    
-    let acronymDetailRequester = AcronymRequest(acronymID: id)
-    acronymDetailRequester.getUser { [weak self] result in
-      switch result {
-      case .success(let user):
-        self?.user = user
-      case .failure:
-        ErrorPresenter.showError(message: "There was an error getting the acronym's user", on: self)
-      }
-    }
-    
-    acronymDetailRequester.getCategories { [weak self] result in
-      switch result {
-      case .success(let categories):
-        self?.categories = categories
-      case .failure:
-        ErrorPresenter.showError(message: "There was an error getting the acronym's categories", on: self)
-      }
-    }
+
+  @IBSegueAction func makeAddToCategoryController(_ coder: NSCoder) -> AddToCategoryTableViewController? {
+    AddToCategoryTableViewController(coder: coder, acronym: acronym, selectedCategories: categories)
   }
-  
-  func updateAcronymView() {
-    DispatchQueue.main.async { [weak self] in
-      self?.tableView.reloadData()
-    }
-  }
-  
-  
+
+
   // MARK: - IBActions
   @IBAction func updateAcronymDetails(_ segue: UIStoryboardSegue) {
-    guard let controller = segue.source as? CreateAcronymTableViewController else {
+    guard let controller = segue.source
+      as? CreateAcronymTableViewController else {
       return
     }
-    
-    acronym = controller.acronym
+    if let acronym = controller.acronym {
+      self.acronym = acronym
+    }
   }
 }
 
 // MARK: - UITableViewDataSource
 extension AcronymDetailTableViewController {
-
   override func numberOfSections(in tableView: UITableView) -> Int {
     return 5
   }
@@ -132,25 +147,27 @@ extension AcronymDetailTableViewController {
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCell(withIdentifier: "AcronymDetailCell", for: indexPath)
-    cell.selectionStyle = .none
-    cell.isUserInteractionEnabled = false
     switch indexPath.section {
     case 0:
-      cell.textLabel?.text = acronym?.short
+      cell.textLabel?.text = acronym.short
     case 1:
-      cell.textLabel?.text = acronym?.long
+      cell.textLabel?.text = acronym.long
     case 2:
       cell.textLabel?.text = user?.name
     case 3:
       cell.textLabel?.text = categories[indexPath.row].name
     case 4:
       cell.textLabel?.text = "Add To Category"
-      cell.selectionStyle = .default
-      cell.isUserInteractionEnabled = true
     default:
       break
     }
-
+    if indexPath.section == 4 {
+      cell.selectionStyle = .default
+      cell.isUserInteractionEnabled = true
+    } else {
+      cell.selectionStyle = .none
+      cell.isUserInteractionEnabled = false
+    }
     return cell
   }
 

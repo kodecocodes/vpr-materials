@@ -26,8 +26,10 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Foundation
+
 final class Category: Codable {
-  var id: Int?
+  var id: UUID?
   var name: String
 
   init(name: String) {

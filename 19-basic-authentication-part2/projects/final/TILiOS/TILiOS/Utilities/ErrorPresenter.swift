@@ -28,16 +28,13 @@
 
 import UIKit
 
-class ErrorPresenter {
-
+enum ErrorPresenter {
   static func showError(message: String, on viewController: UIViewController?, dismissAction: ((UIAlertAction) -> Void)? = nil) {
-    weak var vc = viewController
+    weak var weakViewController = viewController
     DispatchQueue.main.async {
-      let alert = UIAlertController(title: "Error",
-                                    message: message,
-                                    preferredStyle: .alert)
-      alert.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: dismissAction))
-      vc?.present(alert, animated: true)
+      let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+      alertController.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: dismissAction))
+      weakViewController?.present(alertController, animated: true)
     }
   }
 }

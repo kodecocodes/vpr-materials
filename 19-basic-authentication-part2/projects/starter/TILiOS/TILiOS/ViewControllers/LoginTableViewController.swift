@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,23 @@
 import UIKit
 
 class LoginTableViewController: UITableViewController {
-
   // MARK: - Properties
-
   @IBOutlet weak var usernameTextField: UITextField!
   @IBOutlet weak var passwordTextField: UITextField!
 
   @IBAction func loginTapped(_ sender: UIBarButtonItem) {
-    guard let username = usernameTextField.text, !username.isEmpty else {
+    guard 
+      let username = usernameTextField.text, 
+      !username.isEmpty 
+    else {
       ErrorPresenter.showError(message: "Please enter your username", on: self)
       return
     }
 
-    guard let password = passwordTextField.text, !password.isEmpty else {
+    guard 
+      let password = passwordTextField.text, 
+      !password.isEmpty 
+    else {
       ErrorPresenter.showError(message: "Please enter your password", on: self)
       return
     }

@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -28,64 +28,60 @@
 
 import Foundation
 
-enum AcronymUserRequestResult {
-  case success(User)
-  case failure
-}
-
-enum CategoryAddResult {
-  case success
-  case failure
-}
-
 struct AcronymRequest {
   let resource: URL
 
-  init(acronymID: Int) {
+  init(acronymID: UUID) {
     let resourceString = "http://localhost:8080/api/acronyms/\(acronymID)"
     guard let resourceURL = URL(string: resourceString) else {
-      fatalError()
+      fatalError("Unable to createURL")
     }
     self.resource = resourceURL
   }
 
-  func getUser(completion: @escaping (AcronymUserRequestResult) -> Void) {
+  func getUser(
+    completion: @escaping (
+      Result<User, ResourceRequestError>
+    ) -> Void
+  ) {
     let url = resource.appendingPathComponent("user")
+
     let dataTask = URLSession.shared.dataTask(with: url) { data, _, _ in
       guard let jsonData = data else {
-        completion(.failure)
+        completion(.failure(.noData))
         return
       }
       do {
-        let decoder = JSONDecoder()
-        let user = try decoder.decode(User.self, from: jsonData)
+        let user = try JSONDecoder().decode(User.self, from: jsonData)
         completion(.success(user))
       } catch {
-        completion(.failure)
+        completion(.failure(.decodingError))
       }
     }
     dataTask.resume()
   }
 
-  func getCategories(completion: @escaping (GetResourcesRequest<Category>) -> Void) {
+  func getCategories(completion: @escaping (Result<[Category], ResourceRequestError>) -> Void) {
     let url = resource.appendingPathComponent("categories")
     let dataTask = URLSession.shared.dataTask(with: url) { data, _, _ in
       guard let jsonData = data else {
-        completion(.failure)
+        completion(.failure(.noData))
         return
       }
       do {
-        let decoder = JSONDecoder()
-        let categories = try decoder.decode([Category].self, from: jsonData)
+        let categories = try JSONDecoder().decode([Category].self, from: jsonData)
         completion(.success(categories))
       } catch {
-        completion(.failure)
+        completion(.failure(.decodingError))
       }
     }
     dataTask.resume()
   }
 
-  func update(with updateData: Acronym, completion: @escaping (SaveResult<Acronym>) -> Void) {
+  func update(
+    with updateData: CreateAcronymData,
+    completion: @escaping (Result<Acronym, ResourceRequestError>) -> Void
+  ) {
     do {
       guard let token = Auth().token else {
         Auth().logout()
@@ -98,26 +94,29 @@ struct AcronymRequest {
       urlRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
       let dataTask = URLSession.shared.dataTask(with: urlRequest) { data, response, _ in
         guard let httpResponse = response as? HTTPURLResponse else {
-          completion(.failure)
+          completion(.failure(.noData))
           return
         }
-        guard httpResponse.statusCode == 200, let jsonData = data else {
+        guard 
+          httpResponse.statusCode == 200, 
+          let jsonData = data 
+        else {
           if httpResponse.statusCode == 401 {
             Auth().logout()
           }
-          completion(.failure)
+          completion(.failure(.noData))
           return
         }
         do {
           let acronym = try JSONDecoder().decode(Acronym.self, from: jsonData)
           completion(.success(acronym))
         } catch {
-          completion(.failure)
+          completion(.failure(.decodingError))
         }
       }
       dataTask.resume()
     } catch {
-      completion(.failure)
+      completion(.failure(.encodingError))
     }
   }
 
@@ -133,33 +132,39 @@ struct AcronymRequest {
     dataTask.resume()
   }
 
-  func add(category: Category, completion: @escaping (CategoryAddResult) -> Void) {
+  func add(
+    category: Category,
+    completion: @escaping (Result<Void, CategoryAddError>) -> Void
+  ) {
     guard let categoryID = category.id else {
-      completion(.failure)
+      completion(.failure(.noID))
       return
     }
     guard let token = Auth().token else {
       Auth().logout()
       return
     }
-    let url = resource.appendingPathComponent("categories").appendingPathComponent("\(categoryID)")
+    let url = resource
+      .appendingPathComponent("categories")
+      .appendingPathComponent("\(categoryID)")
     var urlRequest = URLRequest(url: url)
     urlRequest.httpMethod = "POST"
     urlRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-    let dataTask = URLSession.shared.dataTask(with: urlRequest) { _, response, _ in
-      guard let httpResponse = response as? HTTPURLResponse else {
-        completion(.failure)
-        return
-      }
-      guard httpResponse.statusCode == 201 else {
-        if httpResponse.statusCode == 401 {
-          Auth().logout()
+    let dataTask = URLSession.shared
+      .dataTask(with: urlRequest) { _, response, _ in
+        guard let httpResponse = response as? HTTPURLResponse else {
+          completion(.failure(.invalidResponse))
+          return
         }
-        completion(.failure)
-        return
+        guard httpResponse.statusCode == 201 else {
+          if httpResponse.statusCode == 401 {
+            Auth().logout()
+          }
+          completion(.failure(.invalidResponse))
+          return
+        }
+        completion(.success(()))
       }
-      completion(.success)
-    }
     dataTask.resume()
   }
 }
