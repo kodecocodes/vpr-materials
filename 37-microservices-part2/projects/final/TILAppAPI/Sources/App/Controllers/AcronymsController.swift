@@ -92,7 +92,7 @@ struct AcronymsController: RouteCollection {
     return req.client.get("\(acronymsServiceURL)/\(acronymID)").flatMapThrowing { response in
       return try response.content.decode(Acronym.self)
     }.flatMap { acronym in
-      return req.client.get("\(self.userServiceURL)/users/\(acronym.userID)")
+      return req.client.get("\(userServiceURL)/users/\(acronym.userID)")
     }
   }
 }
