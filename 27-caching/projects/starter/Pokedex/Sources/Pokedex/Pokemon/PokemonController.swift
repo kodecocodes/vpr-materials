@@ -26,49 +26,39 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentSQLite
+import Fluent
 import Vapor
 
-/// Represents a Pokemon we have captured and logged in our Pokedex.
-final class Pokemon: SQLiteModel {
-  /// See `Model.id`
-  var id: Int?
+/// Controllers querying and storing new Pokedex entries.
+final class PokemonController {
+  /// Lists all known pokemon in our pokedex.
+  func index(_ req: Request) throws -> EventLoopFuture<[Pokemon]> {
+    return Pokemon.query(on: req.db).all()
+  }
   
-  /// The Pokemon's name.
-  var name: String
-  
-  /// See `Timestampable.createdAt`
-  var createdAt: Date?
-  
-  /// See `Timestampable.updatedAt`
-  var updatedAt: Date?
-  
-  /// Creates a new `Pokemon`.
-  init(id: Int? = nil, name: String) {
-    self.id = id
-    self.name = name
+  /// Stores a newly discovered pokemon in our pokedex.
+  func create(_ req: Request) throws -> EventLoopFuture<Pokemon> {
+    let newPokemon = try req.content.decode(Pokemon.self)
+    /// Check to see if the pokemon already exists
+    return Pokemon.query(on: req.db).filter(\.$name == newPokemon.name).count().flatMapThrowing { count in
+      /// Ensure number of Pokemon with the same name is zero
+      guard count == 0 else {
+        throw Abort(.badRequest, reason: "You already caught \(newPokemon.name).")
+      }
+    }.flatMap { _ in
+        /// Check if the pokemon is real. This will throw an error aborting
+        /// the request if the pokemon is not real.
+        return req.pokeAPI.verify(name: newPokemon.name)
+      }.flatMap { nameVerified in
+        /// Ensure the name verification returned true, or throw an error
+        guard nameVerified else {
+          return req.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "Invalid Pokemon \(newPokemon.name)."))
+        }
+        
+        /// Save the new Pokemon
+        return newPokemon.save(on: req.db)
+          .transform(to: newPokemon)
+    }
   }
 }
 
-/// Allows this model to be parsed/serialized to HTTP messages
-/// as JSON or any other supported format.
-extension Pokemon: Content { }
-
-/// Allows this Model to be used as its own database migration.
-/// The database schema will be inferred from the Model's properties.
-extension Pokemon: Migration { }
-
-/// Allows this Model to be parameterized in Router paths.
-extension Pokemon: Parameter { }
-
-/// Allows Fluent to automatically update this Model's `createdAt`
-/// and `updatedAt` properties as necessary.
-extension Pokemon {
-  static var createdAtKey: WritableKeyPath<Pokemon, Date?> {
-    return \.createdAt
-  }
-  
-  static var updatedAtKey: WritableKeyPath<Pokemon, Date?> {
-    return \.updatedAt
-  }
-}

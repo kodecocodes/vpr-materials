@@ -26,36 +26,47 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentSQLite
 import Vapor
 
-/// Controllers querying and storing new Pokedex entries.
-final class PokemonController {
-  /// Lists all known pokemon in our pokedex.
-  func index(_ req: Request) throws -> Future<[Pokemon]> {
-    return Pokemon.query(on: req).all()
+extension Request {
+  public var pokeAPI: PokeAPI {
+    .init(client: self.client)
+  }
+}
+
+/// A simple wrapper around the "pokeapi.co" API.
+public final class PokeAPI {
+  /// The HTTP client powering this API.
+  let client: Client
+  
+  /// Creates a new `PokeAPI` wrapper from the supplied client and cache.
+  init(client: Client) {
+    self.client = client
   }
   
-  /// Stores a newly discovered pokemon in our pokedex.
-  func create(_ req: Request, _ newPokemon: Pokemon) throws -> Future<Pokemon> {
-    /// Check to see if the pokemon already exists
-    return Pokemon.query(on: req).filter(\.name == newPokemon.name).count().flatMap { count -> Future<Bool> in
-        /// Ensure number of Pokemon with the same name is zero
-        guard count == 0 else {
-          throw Abort(.badRequest, reason: "You already caught \(newPokemon.name).")
-        }
-          
-        /// Check if the pokemon is real. This will throw an error aborting
-        /// the request if the pokemon is not real.
-        return try req.make(PokeAPI.self).verifyName(newPokemon.name, on: req)
-      }.flatMap { nameVerified -> Future<Pokemon> in
-        /// Ensure the name verification returned true, or throw an error
-        guard nameVerified else {
-          throw Abort(.badRequest, reason: "Invalid Pokemon \(newPokemon.name).")
-        }
-        
-        /// Save the new Pokemon
-        return newPokemon.save(on: req)
+  /// Returns `true` if the supplied Pokemon name is real.
+  ///
+  /// - parameter name: The name to verify.
+  public func verify(name: String) -> EventLoopFuture<Bool> {
+    /// Query the PokeAPI.
+    return self.fetchPokemon(named: name).flatMapThrowing { res in
+      switch res.status.code {
+      case 200..<300:
+        /// The API returned 2xx which means this is a real Pokemon name
+        return true
+      case 404:
+        /// The API returned a 404 meaning this Pokemon name was not found.
+        return false
+      default:
+        /// The API returned a 500. Only thing we can do is forward the error.
+        throw Abort(.internalServerError, reason: "Unexpected PokeAPI response: \(res.status)")
+      }
     }
+  }
+  
+  /// Fetches a pokemen with the supplied name from the PokeAPI.
+  private func fetchPokemon(named name: String) -> EventLoopFuture<ClientResponse> {
+    let name = name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    return self.client.get("https://pokeapi.co/api/v2/pokemon/\(name)")
   }
 }
