@@ -36,12 +36,12 @@
 
     <a href="/login-github">
       <img class="mt-3" src="/images/sign-in-with-github.png"
-      alt="Sign In With GitHub">
+       alt="Sign In With GitHub">
     </a>
 
     <a href="/login-google">
       <img class="mt-3" src="/images/sign-in-with-google.png"
-      alt="Sign In With Google">
+       alt="Sign In With Google">
     </a>
   #endexport
 #endextend
