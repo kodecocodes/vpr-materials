@@ -42,21 +42,48 @@ struct ImperialController: RouteCollection {
       callback: googleCallbackURL,
       scope: ["profile", "email"],
       completion: processGoogleLogin)
+
+    routes.get("iOS", "login-google", use: iOSGoogleLogin)
   }
 
   func processGoogleLogin(request: Request, token: String) throws -> EventLoopFuture<ResponseEncodable> {
-    return try Google.getUser(on: request).flatMap { userInfo in
-      return User.query(on: request.db).filter(\.$username == userInfo.email).first().flatMap { foundUser in
+    try Google.getUser(on: request).flatMap { userInfo in
+      User.query(on: request.db).filter(\.$username == userInfo.email).first().flatMap { foundUser in
         guard let existingUser = foundUser else {
           let user = User(name: userInfo.name, username: userInfo.email, password: UUID().uuidString)
-          return user.save(on: request.db).map {
+          return user.save(on: request.db).flatMap {
             request.session.authenticate(user)
-            return request.redirect(to: "/")
+            return generateRedirect(on: request, for: user)
           }
         }
         request.session.authenticate(existingUser)
-        return request.eventLoop.future(request.redirect(to: "/"))
+        return generateRedirect(on: request, for: existingUser)
       }
+    }
+  }
+
+  func iOSGoogleLogin(_ req: Request) -> Response {
+    req.session.data["oauth_login"] = "iOS"
+    return req.redirect(to: "/login-google")
+  }
+
+  func generateRedirect(on req: Request, for user: User) -> EventLoopFuture<ResponseEncodable> {
+    let redirectURL: EventLoopFuture<String>
+    if req.session.data["oauth_login"] == "iOS" {
+      do {
+        let token = try Token.generate(for: user)
+        redirectURL = token.save(on: req.db).map {
+          "tilapp://auth?token=\(token.value)"
+        }
+      } catch {
+        return req.eventLoop.future(error: error)
+      }
+    } else {
+      redirectURL = req.eventLoop.future("/")
+    }
+    req.session.data["oauth_login"] = nil
+    return redirectURL.map { url in
+      req.redirect(to: url)
     }
   }
 }
