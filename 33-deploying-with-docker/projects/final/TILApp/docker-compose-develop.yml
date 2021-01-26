@@ -1,0 +1,24 @@
+version: '3'
+services:
+  til-app:
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: develop.Dockerfile
+    ports: 
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+  postgres:
+    image: "postgres"
+    environment:
+      - POSTGRES_DB=vapor_database
+      - POSTGRES_USER=vapor_username
+      - POSTGRES_PASSWORD=vapor_password
+  start_dependencies:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - postgres
+    command: postgres:5432
