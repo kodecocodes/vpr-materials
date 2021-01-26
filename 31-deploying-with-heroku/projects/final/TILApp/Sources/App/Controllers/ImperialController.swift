@@ -33,30 +33,28 @@ import ImperialGitHub
 
 struct ImperialController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
-    guard let googleCallbackURL =
-            Environment.get("GOOGLE_CALLBACK_URL") else {
-      fatalError("Google callback URL not set")
+    if let googleCallbackURL =
+        Environment.get("GOOGLE_CALLBACK_URL") {
+      try routes.oAuth(
+        from: Google.self,
+        authenticate: "login-google",
+        callback: googleCallbackURL,
+        scope: ["profile", "email"],
+        completion: processGoogleLogin)
+
+      routes.get("iOS", "login-google", use: iOSGoogleLogin)
     }
-    try routes.oAuth(
-      from: Google.self,
-      authenticate: "login-google",
-      callback: googleCallbackURL,
-      scope: ["profile", "email"],
-      completion: processGoogleLogin)
 
-    routes.get("iOS", "login-google", use: iOSGoogleLogin)
+    if let githubCallbackURL =
+      Environment.get("GITHUB_CALLBACK_URL") {
+      try routes.oAuth(
+        from: GitHub.self,
+        authenticate: "login-github",
+        callback: githubCallbackURL,
+        completion: processGitHubLogin)
 
-    guard let githubCallbackURL =
-            Environment.get("GITHUB_CALLBACK_URL") else {
-      fatalError("GitHub callback URL not set")
+      routes.get("iOS", "login-github", use: iOSGitHubLogin)
     }
-    try routes.oAuth(
-      from: GitHub.self,
-      authenticate: "login-github",
-      callback: githubCallbackURL,
-      completion: processGitHubLogin)
-
-    routes.get("iOS", "login-github", use: iOSGitHubLogin)
   }
 
   func processGoogleLogin(request: Request, token: String) throws -> EventLoopFuture<ResponseEncodable> {
