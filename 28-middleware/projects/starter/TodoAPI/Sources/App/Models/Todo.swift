@@ -26,20 +26,43 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentSQLite
+import Fluent
 import Vapor
 
 /// A simple TODO-list item.
-final class Todo: SQLiteModel, Content, Migration, Parameter {
+final class Todo: Model, Content {
+  /// Related database schema.
+  static let schema = "todos"
+  
   /// Unique identifier for this `Todo`
-  var id: Int?
+  @ID(key: .id)
+  var id: UUID?
 
   /// Short, descriptive title explaining this `Todo`
+  @Field(key: "title")
   var title: String
+  
+  /// Create new, empty `Todo`.
+  init() { }
 
   /// Creates a new `Todo`
-  init(id: Int? = nil, title: String) {
+  init(id: UUID? = nil, title: String) {
     self.id = id
     self.title = title
+  }
+}
+
+struct CreateTodo: Migration {
+  /// Setup todos table.
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("todos")
+      .id()
+      .field("title", .string, .required)
+      .create()
+  }
+  
+  /// Undo migration.
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("todos").delete()
   }
 }

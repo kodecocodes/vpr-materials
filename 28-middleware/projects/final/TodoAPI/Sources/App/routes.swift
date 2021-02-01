@@ -28,16 +28,15 @@
 
 import Vapor
 
-/// Register your application's routes here.
-public func routes(_ router: Router) throws {
+func routes(_ app: Application) throws {
   // register todo controller routes
   let todoController = TodoController()
 
-  router.get("todos", use: todoController.index)
+  app.get("todos", use: todoController.index)
 
-  router.group(SecretMiddleware.self) { secretGroup in
+  try app.group(SecretMiddleware.detect()) { secretGroup in
     // routes registered inside this closure will use `SecretMiddleware`
     secretGroup.post("todos", use: todoController.create)
-    secretGroup.delete("todos", Todo.parameter, use: todoController.delete)
+    secretGroup.delete("todos", ":id", use: todoController.delete)
   }
 }

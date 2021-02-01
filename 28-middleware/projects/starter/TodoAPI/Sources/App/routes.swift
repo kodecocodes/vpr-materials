@@ -28,12 +28,10 @@
 
 import Vapor
 
-/// Register your application's routes here.
-public func routes(_ router: Router) throws {
+func routes(_ app: Application) throws {
   // register todo controller routes
   let todoController = TodoController()
-
-  router.get("todos", use: todoController.index)
-  router.post("todos", use: todoController.create)
-  router.delete("todos", Todo.parameter, use: todoController.delete)
+  app.get("todos", use: todoController.index)
+  app.post("todos", use: todoController.create)
+  app.delete("todos", ":id", use: todoController.delete)
 }

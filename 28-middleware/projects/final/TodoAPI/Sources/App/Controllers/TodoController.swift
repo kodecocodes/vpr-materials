@@ -26,27 +26,27 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentSQLite
+import Fluent
 import Vapor
 
 final class TodoController {
   /// Returns a list of all Todo items.
-  func index(_ req: Request) -> Future<[Todo]> {
-    return Todo.query(on: req).all()
+  func index(_ req: Request) -> EventLoopFuture<[Todo]> {
+    return Todo.query(on: req.db).all()
   }
 
   /// Creates a new Todo item.
-  func create(_ req: Request) -> Future<Todo> {
-    return req.content.get(String.self, at: "title").flatMap { title in
-      let todo = Todo(title: title)
-      return todo.save(on: req)
-    }
+  func create(_ req: Request) throws -> EventLoopFuture<Todo> {
+    let todo = try req.content.decode(Todo.self)
+    return todo.create(on: req.db)
+      .transform(to: todo)
   }
 
   /// Deletes an existing Todo item.
-  func delete(_ req: Request) throws -> Future<HTTPStatus> {
-    return try req.parameters.next(Todo.self).flatMap { todo in
-      return todo.delete(on: req)
-    }.transform(to: .ok)
+  func delete(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+    return Todo.find(req.parameters.get("id"), on: req.db)
+      .unwrap(or: Abort(.notFound))
+      .flatMap { $0.delete(on: req.db) }
+      .transform(to: .ok)
   }
 }

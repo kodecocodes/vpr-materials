@@ -30,18 +30,13 @@ import Vapor
 
 /// Logs all requests that pass through it.
 final class LogMiddleware: Middleware {
-  /// Logs the messages.
-  let logger: Logger
-
   /// Creates a new `LogMiddleware`.
-  init(logger: Logger) {
-    self.logger = logger
-  }
+  init() { }
 
   /// See `Middleware`.
-  func respond(to req: Request, chainingTo next: Responder) throws -> Future<Response> {
+  func respond(to req: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
     let start = Date()
-    return try next.respond(to: req).map { res in
+    return next.respond(to: req).map { res in
       self.log(res, start: start, for: req)
       return res
     }
@@ -54,17 +49,10 @@ final class LogMiddleware: Middleware {
   ///     - start: Start time for this request, should be created before the application starts responding.
   ///     - req: The `Request` this response was created for.
   func log(_ res: Response, start: Date, for req: Request) {
-    let reqInfo = "\(req.http.method.string) \(req.http.url.path)"
-    let resInfo = "\(res.http.status.code) \(res.http.status.reasonPhrase)"
+    let reqInfo = "\(req.method.string) \(req.url.path)"
+    let resInfo = "\(res.status.code) \(res.status.reasonPhrase)"
     let time = Date().timeIntervalSince(start).readableMilliseconds
-    logger.info("\(reqInfo) -> \(resInfo) [\(time)]")
-  }
-}
-
-extension LogMiddleware: ServiceType {
-  /// See `ServiceType`.
-  static func makeService(for container: Container) throws -> LogMiddleware {
-    return try .init(logger: container.make())
+    req.logger.info("\(reqInfo) -> \(resInfo) [\(time)]")
   }
 }
 
@@ -73,7 +61,7 @@ extension TimeInterval {
   var readableMilliseconds: String {
     let string = (self * 1000).description
     // include one decimal point after the zero
-    let endIndex = string.index(string.index(of: ".")!, offsetBy: 2)
+    let endIndex = string.index(string.firstIndex(of: ".")!, offsetBy: 2)
     let trimmed = string[string.startIndex..<endIndex]
     return .init(trimmed) + "ms"
   }

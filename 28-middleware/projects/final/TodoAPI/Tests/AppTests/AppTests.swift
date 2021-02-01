@@ -31,10 +31,8 @@ import XCTest
 
 final class AppTests: XCTestCase {
   func testStub() throws {
-    // add your tests here
+    let app = Application()
+    defer { app.shutdown() }
+    try configure(app)
   }
-  
-  static let allTests = [
-    ("testStub", testStub),
-    ]
 }

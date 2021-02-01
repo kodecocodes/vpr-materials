@@ -25,17 +25,14 @@
 /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
-
 @testable import App
 import Vapor
 import XCTest
 
 final class AppTests: XCTestCase {
-    func testStub() throws {
-        // add your tests here
-    }
-
-    static let allTests = [
-        ("testStub", testStub),
-    ]
+  func testStub() throws {
+    let app = Application()
+    defer { app.shutdown() }
+    try configure(app)
+  }
 }

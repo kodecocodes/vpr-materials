@@ -30,14 +30,15 @@ import Vapor
 
 /// Rejects requests that do not contain correct secret.
 final class SecretMiddleware {
-  // Your code here
+  /// Creates a new `SecretMiddleware`.
+  init() { }
 }
 
-extension HTTPHeaderName {
+extension HTTPHeaders.Name {
   /// Contains a secret key.
   ///
   /// `HTTPHeaderName` wrapper for "X-Secret".
-  static var xSecret: HTTPHeaderName {
+  static var xSecret: Self {
     return .init("X-Secret")
   }
 }

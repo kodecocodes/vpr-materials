@@ -30,6 +30,14 @@ import Vapor
 
 /// Rejects requests that do not contain correct secret.
 final class SecretMiddleware: Middleware {
+  /// Create a new `SecretMiddleware` from environment variables.
+  static func detect() throws -> Self {
+    guard let secret = Environment.get("SECRET") else {
+      throw Abort(.internalServerError, reason: "No $SECRET set on environment. Use `export SECRET=<secret>`")
+    }
+    return .init(secret: secret)
+  }
+  
   /// The secret expected in the `"X-Secret"` header.
   let secret: String
 
@@ -42,36 +50,20 @@ final class SecretMiddleware: Middleware {
   }
 
   /// See `Middleware`.
-  func respond(to request: Request, chainingTo next: Responder) throws -> Future<Response> {
-    guard request.http.headers.firstValue(name: .xSecret) == secret else {
-      throw Abort(.unauthorized, reason: "Incorrect X-Secret header.")
+  func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
+    guard request.headers.first(name: .xSecret) == secret else {
+      return request.eventLoop.makeFailedFuture(Abort(.unauthorized, reason: "Incorrect X-Secret header."))
     }
 
-    return try next.respond(to: request)
+    return next.respond(to: request)
   }
 }
 
-extension HTTPHeaderName {
+extension HTTPHeaders.Name {
   /// Contains a secret key.
   ///
   /// `HTTPHeaderName` wrapper for "X-Secret".
-  static var xSecret: HTTPHeaderName {
+  static var xSecret: Self {
     return .init("X-Secret")
-  }
-}
-
-extension SecretMiddleware: ServiceType {
-  /// See `ServiceType`.
-  static func makeService(for worker: Container) throws -> SecretMiddleware {
-    let secret: String
-    switch worker.environment {
-    case .development: secret = "foo"
-    default:
-      guard let envSecret = Environment.get("SECRET") else {
-        throw Abort(.internalServerError, reason: "No $SECRET set on environment. Use `export SECRET=<secret>`")
-      }
-      secret = envSecret
-    }
-    return SecretMiddleware(secret: secret)
   }
 }
