@@ -64,7 +64,7 @@ class Auth {
   }
 
   func login(username: String, password: String, completion: @escaping (AuthResult) -> Void) {
-    let path = "http://localhost:8080/api/users/login"
+    let path = "\(apiHostname)/api/users/login"
     guard let url = URL(string: path) else {
       fatalError("Failed to convert URL")
     }
@@ -98,7 +98,7 @@ class Auth {
   }
 
   func login(signInWithAppleInformation: SignInWithAppleToken, completion: @escaping (AuthResult) -> Void) throws {
-    let path = "http://localhost:8080/api/users/siwa"
+    let path = "\(apiHostname)/api/users/siwa"
     guard let url = URL(string: path) else {
       fatalError("Failed to convert URL")
     }

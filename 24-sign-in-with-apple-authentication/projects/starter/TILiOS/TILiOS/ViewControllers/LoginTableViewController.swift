@@ -80,7 +80,7 @@ class LoginTableViewController: UITableViewController {
   }
 
   @IBAction func signInWithGoogleButtonTapped(_ sender: UIButton) {
-    guard let googleAuthURL = URL(string: "http://localhost:8080/iOS/login-google") else {
+    guard let googleAuthURL = URL(string: "\(apiHostname)/iOS/login-google") else {
       return
     }
     let scheme = "tilapp"
@@ -100,7 +100,7 @@ class LoginTableViewController: UITableViewController {
   }
 
   @IBAction func signInWithGithubButtonTapped(_ sender: UIButton) {
-    guard let githubAuthURL = URL(string: "http://localhost:8080/iOS/login-github") else {
+    guard let githubAuthURL = URL(string: "\(apiHostname)/iOS/login-github") else {
       return
     }
     let scheme = "tilapp"

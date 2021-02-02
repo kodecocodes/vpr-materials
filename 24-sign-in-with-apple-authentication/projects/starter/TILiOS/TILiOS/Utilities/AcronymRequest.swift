@@ -32,7 +32,7 @@ struct AcronymRequest {
   let resource: URL
 
   init(acronymID: UUID) {
-    let resourceString = "http://localhost:8080/api/acronyms/\(acronymID)"
+    let resourceString = "\(apiHostname)/api/acronyms/\(acronymID)"
     guard let resourceURL = URL(string: resourceString) else {
       fatalError("Unable to createURL")
     }
