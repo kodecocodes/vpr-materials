@@ -33,6 +33,19 @@ class LoginTableViewController: UITableViewController {
   // MARK: - Properties
   @IBOutlet weak var usernameTextField: UITextField!
   @IBOutlet weak var passwordTextField: UITextField!
+  @IBOutlet var loginTableView: UITableView!
+
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    guard let siwaCell = loginTableView.cellForRow(at: IndexPath(row: 0, section: 2)) else {
+      fatalError("Unable to get Sign in with Apple cell")
+    }
+    let button = ASAuthorizationAppleIDButton()
+    button.addTarget(self, action: #selector(handleSignInWithApple), for: .touchUpInside)
+    let x = (siwaCell.frame.width / 2) - 100
+    button.frame = CGRect(x: x, y: 3, width: 200, height: 38)
+    siwaCell.contentView.addSubview(button)
+  }
 
   @IBAction func loginTapped(_ sender: UIBarButtonItem) {
     guard
@@ -104,6 +117,9 @@ class LoginTableViewController: UITableViewController {
     }
     session.presentationContextProvider = self
     session.start()
+  }
+
+  @objc func handleSignInWithApple() {
   }
 }
 
