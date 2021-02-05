@@ -1,15 +1,15 @@
-/// Copyright (c) 2019 Razeware LLC
-/// 
+/// Copyright (c) 2021 Razeware LLC
+///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
 /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 /// copies of the Software, and to permit persons to whom the Software is
 /// furnished to do so, subject to the following conditions:
-/// 
+///
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
-/// 
+///
 /// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
 /// distribute, sublicense, create a derivative work, and/or sell copies of the
 /// Software in any work that is designed, intended, or marketed for pedagogical or
@@ -17,7 +17,7 @@
 /// or information technology.  Permission for such use, copying, modification,
 /// merger, publication, distribution, sublicensing, creation of derivative works,
 /// or sale is expressly withheld.
-/// 
+///
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,38 +26,21 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import UIKit
+import Fluent
 
-class CreateCategoryTableViewController: UITableViewController {
-
-  @IBOutlet weak var nameTextField: UITextField!
-
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    nameTextField.becomeFirstResponder()
+struct CreateUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("users")
+      .id()
+      .field("name", .string, .required)
+      .field("username", .string, .required)
+      .field("password", .string, .required)
+      .field("siwaIdentifier", .string)
+      .unique(on: "username")
+      .create()
   }
-
-  @IBAction func cancel(_ sender: Any) {
-    navigationController?.popViewController(animated: true)
-  }
-
-  @IBAction func save(_ sender: Any) {
-    guard let name = nameTextField.text,
-      !name.isEmpty else {
-        ErrorPresenter.showError(message: "You must specify a name", on: self)
-        return
-    }
-
-    let category = Category(name: name)
-    ResourceRequest<Category>(resourcePath: "categories").save(category) { [weak self] result in
-      switch result {
-      case .failure:
-        ErrorPresenter.showError(message: "There was a problem saving the category", on: self)
-      case .success:
-        DispatchQueue.main.async { [weak self] in
-          self?.navigationController?.popViewController(animated: true)
-        }
-      }
-    }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("users").delete()
   }
 }
