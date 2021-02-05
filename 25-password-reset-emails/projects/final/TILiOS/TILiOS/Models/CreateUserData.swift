@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,19 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import UIKit
+import Foundation
 
-enum ErrorPresenter {
-  static func showError(message: String, on viewController: UIViewController?, dismissAction: ((UIAlertAction) -> Void)? = nil) {
-    weak var weakViewController = viewController
-    DispatchQueue.main.async {
-      let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-      alertController.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: dismissAction))
-      weakViewController?.present(alertController, animated: true)
-    }
+final class CreateUserData: Codable {
+  var id: UUID?
+  var name: String
+  var username: String
+  var password: String?
+  var email: String
+
+  init(name: String, username: String, password: String, email: String) {
+    self.name = name
+    self.username = username
+    self.password = password
+    self.email = email
   }
 }

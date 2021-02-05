@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,54 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Security
 import UIKit
 
-enum ErrorPresenter {
-  static func showError(message: String, on viewController: UIViewController?, dismissAction: ((UIAlertAction) -> Void)? = nil) {
-    weak var weakViewController = viewController
-    DispatchQueue.main.async {
-      let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-      alertController.addAction(UIAlertAction(title: "Dismiss", style: .default, handler: dismissAction))
-      weakViewController?.present(alertController, animated: true)
+enum Keychain {
+  @discardableResult
+  static func save(key: String, data: String) -> OSStatus {
+    let bytes: [UInt8] = .init(data.utf8)
+    let bytesAsData = Data(bytes)
+    let query = [
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key,
+      kSecValueData: bytesAsData
+    ] as [CFString: Any]
+
+    SecItemDelete(query as CFDictionary)
+
+    return SecItemAdd(query as CFDictionary, nil)
+  }
+
+  @discardableResult
+  static func delete(key: String) -> OSStatus {
+    let query = [
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key
+    ] as [CFString: Any]
+
+    return SecItemDelete(query as CFDictionary)
+  }
+
+  static func load(key: String) -> String? {
+    let query = [
+      kSecClass: kSecClassGenericPassword,
+      kSecAttrAccount: key,
+      kSecReturnData: kCFBooleanTrue as Any,
+      kSecMatchLimit: kSecMatchLimitOne
+    ] as [CFString: Any]
+
+    var dataTypeRef: AnyObject?
+
+    let status: OSStatus = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
+
+    if status == noErr {
+      guard let data = dataTypeRef as? Data else {
+        return nil
+      }
+      return String(decoding: data, as: UTF8.self)
+    } else {
+      return nil
     }
   }
 }
