@@ -72,7 +72,13 @@ class LoginTableViewController: UITableViewController {
     }
     let scheme = "tilapp"
     let session = ASWebAuthenticationSession(url: googleAuthURL, callbackURLScheme: scheme) { callbackURL, error in
-      guard error == nil, let callbackURL = callbackURL else { return }
+      guard 
+        error == nil, 
+        let callbackURL = callbackURL 
+      else { 
+        return 
+      }
+
       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems
       let token = queryItems?.first { $0.name == "token" }?.value
       Auth().token = token
@@ -92,7 +98,13 @@ class LoginTableViewController: UITableViewController {
     }
     let scheme = "tilapp"
     let session = ASWebAuthenticationSession(url: githubAuthURL, callbackURLScheme: scheme) { callbackURL, error in
-      guard error == nil, let callbackURL = callbackURL else { return }
+      guard
+        error == nil,
+        let callbackURL = callbackURL
+      else {
+        return
+      }
+
       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems
       let token = queryItems?.first { $0.name == "token" }?.value
       Auth().token = token
