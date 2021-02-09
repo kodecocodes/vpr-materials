@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,23 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import XCTest
-@testable import AppTests
+import Fluent
 
-XCTMain([
-  testCase(AcronymTests.allTests),
-  testCase(CategoryTests.allTests),
-  testCase(UserTests.allTests)
-])
+struct CreateUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("users")
+      .id()
+      .field("name", .string, .required)
+      .field("username", .string, .required)
+      .field("password", .string, .required)
+      .field("siwaIdentifier", .string)
+      .field("email", .string, .required)
+      .unique(on: "email")
+      .unique(on: "username")
+      .create()
+  }
+  
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    database.schema("users").delete()
+  }
+}
