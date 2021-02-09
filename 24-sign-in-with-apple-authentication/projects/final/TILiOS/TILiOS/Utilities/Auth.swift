@@ -108,7 +108,11 @@ class Auth {
     loginRequest.httpBody = try JSONEncoder().encode(signInWithAppleInformation)
 
     let dataTask = URLSession.shared.dataTask(with: loginRequest) { data, response, _ in
-      guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200, let jsonData = data else {
+      guard
+        let httpResponse = response as? HTTPURLResponse,
+        httpResponse.statusCode == 200,
+        let jsonData = data
+      else {
         completion(.failure)
         return
       }

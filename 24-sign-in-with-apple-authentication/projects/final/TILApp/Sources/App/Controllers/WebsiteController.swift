@@ -127,8 +127,10 @@ struct WebsiteController: RouteCollection {
     
     let expectedToken = req.session.data["CSRF_TOKEN"]
     req.session.data["CSRF_TOKEN"] = nil
-    guard let csrfToken = data.csrfToken,
-          expectedToken == csrfToken else {
+    guard
+      let csrfToken = data.csrfToken,
+      expectedToken == csrfToken
+    else {
       throw Abort(.badRequest)
     }
     
@@ -137,7 +139,7 @@ struct WebsiteController: RouteCollection {
       guard let id = acronym.id else {
         return req.eventLoop.future(error: Abort(.internalServerError))
       }
-      var categorySaves = [EventLoopFuture<Void>]()
+      var categorySaves: [EventLoopFuture<Void>] = []
       for category in data.categories ?? [] {
         categorySaves.append(Category.addCategory(category, to: acronym, on: req))
       }
@@ -179,7 +181,7 @@ struct WebsiteController: RouteCollection {
         let categoriesToAdd = newSet.subtracting(existingSet)
         let categoriesToRemove = existingSet.subtracting(newSet)
         
-        var categoryResults = [EventLoopFuture<Void>]()
+        var categoryResults: [EventLoopFuture<Void>] = []
         for newCategory in categoriesToAdd {
           categoryResults.append(Category.addCategory(newCategory, to: acronym, on: req))
         }
@@ -279,8 +281,12 @@ struct WebsiteController: RouteCollection {
 
   func appleAuthCallbackHandler(_ req: Request) throws -> EventLoopFuture<View> {
     let siwaData = try req.content.decode(AppleAuthorizationResponse.self)
-    guard let sessionState = req.cookies["SIWA_STATE"]?.string, !sessionState.isEmpty, sessionState == siwaData.state else {
-      req.logger.warning("SIWA not does not exists or does not match")
+    guard
+      let sessionState = req.cookies["SIWA_STATE"]?.string,
+      !sessionState.isEmpty,
+      sessionState == siwaData.state 
+    else {
+      req.logger.warning("SIWA does not exist or does not match")
       throw Abort(.unauthorized)
     }
     let context = SIWAHandleContext(token: siwaData.idToken, email: siwaData.user?.email, firstName: siwaData.user?.name?.firstName, lastName: siwaData.user?.name?.lastName)
@@ -298,7 +304,11 @@ struct WebsiteController: RouteCollection {
         if let user = user {
           userFuture = req.eventLoop.future(user)
         } else {
-          guard let email = data.email, let firstName = data.firstName, let lastName = data.lastName else {
+          guard
+            let email = data.email,
+            let firstName = data.firstName,
+            let lastName = data.lastName
+          else {
             return req.eventLoop.future(error: Abort(.badRequest))
           }
           let user = User(name: "\(firstName) \(lastName)", username: email, password: UUID().uuidString, siwaIdentifier: siwaToken.subject.value)
@@ -429,7 +439,7 @@ extension ValidatorResults {
 
 extension ValidatorResults.ZipCode: ValidatorResult {
   var isFailure: Bool {
-    !self.isValidZipCode
+    !isValidZipCode
   }
 
   var successDescription: String? {
@@ -449,7 +459,7 @@ extension Validator where T == String {
   public static var zipCode: Validator<T> {
     Validator { input -> ValidatorResult in
       guard
-        let range = input.range(of: self.zipCodeRegex, options: [.regularExpression]),
+        let range = input.range(of: zipCodeRegex, options: [.regularExpression]),
         range.lowerBound == input.startIndex && range.upperBound == input.endIndex
       else {
         return ValidatorResults.ZipCode(isValidZipCode: false)
@@ -482,17 +492,16 @@ struct AppleAuthorizationResponse: Decodable {
   }
 
   init(from decoder: Decoder) throws {
-
     let values = try decoder.container(keyedBy: CodingKeys.self)
-    self.code = try values.decode(String.self, forKey: .code)
-    self.state = try values.decode(String.self, forKey: .state)
-    self.idToken = try values.decode(String.self, forKey: .idToken)
+    code = try values.decode(String.self, forKey: .code)
+    state = try values.decode(String.self, forKey: .state)
+    idToken = try values.decode(String.self, forKey: .idToken)
 
     if let jsonString = try values.decodeIfPresent(String.self, forKey: .user),
        let jsonData = jsonString.data(using: .utf8) {
-      self.user = try JSONDecoder().decode(User.self, from: jsonData)
+      user = try JSONDecoder().decode(User.self, from: jsonData)
     } else {
-      self.user = nil
+      user = nil
     }
   }
 }
