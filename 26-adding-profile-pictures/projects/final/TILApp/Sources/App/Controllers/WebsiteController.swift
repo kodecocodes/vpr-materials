@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -27,319 +27,431 @@
 /// THE SOFTWARE.
 
 import Vapor
-import Leaf
-import Authentication
+import Fluent
 import SendGrid
 
 struct WebsiteController: RouteCollection {
-
   let imageFolder = "ProfilePictures/"
 
-  func boot(router: Router) throws {
-    let authSessionRoutes = router.grouped(User.authSessionsMiddleware())
-    authSessionRoutes.get(use: indexHandler)
-    authSessionRoutes.get("acronyms", Acronym.parameter, use: acronymHandler)
-    authSessionRoutes.get("users", User.parameter, use: userHandler)
-    authSessionRoutes.get("users", use: allUsersHandler)
-    authSessionRoutes.get("categories", use: allCategoriesHandler)
-    authSessionRoutes.get("categories", Category.parameter, use: categoryHandler)
-    authSessionRoutes.get("login", use: loginHandler)
-    authSessionRoutes.post(LoginPostData.self, at: "login", use: loginPostHandler)
-    authSessionRoutes.post("logout", use: logoutHandler)
-    authSessionRoutes.get("register", use: registerHandler)
-    authSessionRoutes.post(RegisterData.self, at: "register", use: registerPostHandler)
-    authSessionRoutes.get("forgottenPassword", use: forgottenPasswordHandler)
-    authSessionRoutes.post("forgottenPassword", use: forgottenPasswordPostHandler)
-    authSessionRoutes.get("resetPassword", use: resetPasswordHandler)
-    authSessionRoutes.post(ResetPasswordData.self, at: "resetPassword", use: resetPasswordPostHandler)
-    authSessionRoutes.get("users", User.parameter, "profilePicture", use: getUsersProfilePictureHandler)
-
-    let protectedRoutes = authSessionRoutes.grouped(RedirectMiddleware<User>(path: "/login"))
+  func boot(routes: RoutesBuilder) throws {
+    let authSessionsRoutes = routes.grouped(User.sessionAuthenticator())
+    authSessionsRoutes.get("login", use: loginHandler)
+    let credentialsAuthRoutes = authSessionsRoutes.grouped(User.credentialsAuthenticator())
+    credentialsAuthRoutes.post("login", use: loginPostHandler)
+    authSessionsRoutes.post("logout", use: logoutHandler)
+    authSessionsRoutes.get("register", use: registerHandler)
+    authSessionsRoutes.post("register", use: registerPostHandler)
+    authSessionsRoutes.post("login", "siwa", "callback", use: appleAuthCallbackHandler)
+    authSessionsRoutes.post("login", "siwa", "handle", use: appleAuthRedirectHandler)
+    authSessionsRoutes.get("forgottenPassword", use: forgottenPasswordHandler)
+    authSessionsRoutes.post("forgottenPassword", use: forgottenPasswordPostHandler)
+    authSessionsRoutes.get("resetPassword", use: resetPasswordHandler)
+    authSessionsRoutes.post("resetPassword", use: resetPasswordPostHandler)
+    
+    authSessionsRoutes.get(use: indexHandler)
+    authSessionsRoutes.get("acronyms", ":acronymID", use: acronymHandler)
+    authSessionsRoutes.get("users", ":userID", use: userHandler)
+    authSessionsRoutes.get("users", use: allUsersHandler)
+    authSessionsRoutes.get("categories", use: allCategoriesHandler)
+    authSessionsRoutes.get("categories", ":categoryID", use: categoryHandler)
+    authSessionsRoutes.get("users", ":userID", "profilePicture", use: getUsersProfilePictureHandler)
+    
+    let protectedRoutes = authSessionsRoutes.grouped(User.redirectMiddleware(path: "/login"))
     protectedRoutes.get("acronyms", "create", use: createAcronymHandler)
-    protectedRoutes.post(CreateAcronymData.self, at: "acronyms", "create", use: createAcronymPostHandler)
-    protectedRoutes.get("acronyms", Acronym.parameter, "edit", use: editAcronymHandler)
-    protectedRoutes.post("acronyms", Acronym.parameter, "edit", use: editAcronymPostHandler)
-    protectedRoutes.post("acronyms", Acronym.parameter, "delete", use: deleteAcronymHandler)
-    protectedRoutes.get("users", User.parameter, "addProfilePicture", use: addProfilePictureHandler)
-    protectedRoutes.post("users", User.parameter, "addProfilePicture", use: addProfilePicturePostHandler)
+    protectedRoutes.post("acronyms", "create", use: createAcronymPostHandler)
+    protectedRoutes.get("acronyms", ":acronymID", "edit", use: editAcronymHandler)
+    protectedRoutes.post("acronyms", ":acronymID", "edit", use: editAcronymPostHandler)
+    protectedRoutes.post("acronyms", ":acronymID", "delete", use: deleteAcronymHandler)
+    protectedRoutes.get("users", ":userID", "addProfilePicture", use: addProfilePictureHandler)
+    protectedRoutes.on(.POST, "users", ":userID", "addProfilePicture", body: .collect(maxSize: "10mb"), use: addProfilePicturePostHandler)
   }
-
-  func indexHandler(_ req: Request) throws -> Future<View> {
-    return Acronym.query(on: req).all().flatMap(to: View.self) { acronyms in
-      let userLoggedIn = try req.isAuthenticated(User.self)
-      let showCookieMessage = req.http.cookies["cookies-accepted"] == nil
-      let context = IndexContext(title: "Home page", acronyms: acronyms, userLoggedIn: userLoggedIn,
-                                 showCookieMessage: showCookieMessage)
-      return try req.view().render("index", context)
+  
+  func indexHandler(_ req: Request) -> EventLoopFuture<View> {
+    Acronym.query(on: req.db).all().flatMap { acronyms in
+      let userLoggedIn = req.auth.has(User.self)
+      let showCookieMessage = req.cookies["cookies-accepted"] == nil
+      let context = IndexContext(title: "Home page", acronyms: acronyms, userLoggedIn: userLoggedIn, showCookieMessage: showCookieMessage)
+      return req.view.render("index", context)
     }
   }
-
-  func acronymHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(Acronym.self).flatMap(to: View.self) { acronym in
-      return acronym.user.get(on: req).flatMap(to: View.self) { user in
-        let categories = try acronym.categories.query(on: req).all()
-        let context = AcronymContext(title: acronym.short, acronym: acronym, user: user, categories: categories)
-        return try req.view().render("acronym", context)
+  
+  func acronymHandler(_ req: Request) -> EventLoopFuture<View> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
+      let userFuture = acronym.$user.get(on: req.db)
+      let categoriesFuture = acronym.$categories.query(on: req.db).all()
+      return userFuture.and(categoriesFuture).flatMap { user, categories in
+        let context = AcronymContext(
+          title: acronym.short,
+          acronym: acronym,
+          user: user,
+          categories: categories)
+        return req.view.render("acronym", context)
       }
     }
   }
-
-  func userHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(User.self).flatMap(to: View.self) { user in
-      return try user.acronyms.query(on: req).all().flatMap(to: View.self) { acronyms in
-        let loggedInUser = try req.authenticated(User.self)
+  
+  func userHandler(_ req: Request) -> EventLoopFuture<View> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      user.$acronyms.get(on: req.db).flatMap { acronyms in
+        let loggedInUser = req.auth.get(User.self)
         let context = UserContext(title: user.name, user: user, acronyms: acronyms, authenticatedUser: loggedInUser)
-        return try req.view().render("user", context)
+        return req.view.render("user", context)
       }
     }
   }
-
-  func allUsersHandler(_ req: Request) throws -> Future<View> {
-    return User.query(on: req).all().flatMap(to: View.self) { users in
-      let context = AllUsersContext(title: "All Users", users: users)
-      return try req.view().render("allUsers", context)
+  
+  func allUsersHandler(_ req: Request) -> EventLoopFuture<View> {
+    User.query(on: req.db).all().flatMap { users in
+      let context = AllUsersContext(
+        title: "All Users",
+        users: users)
+      return req.view.render("allUsers", context)
     }
   }
-
-  func allCategoriesHandler(_ req: Request) throws -> Future<View> {
-    let categories = Category.query(on: req).all()
-    let context = AllCategoriesContext(categories: categories)
-    return try req.view().render("allCategories", context)
-  }
-
-  func categoryHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(Category.self).flatMap(to: View.self) { category in
-      let acronyms = try category.acronyms.query(on: req).all()
-      let context = CategoryContext(title: category.name, category: category, acronyms: acronyms)
-      return try req.view().render("category", context)
+  
+  func allCategoriesHandler(_ req: Request) -> EventLoopFuture<View> {
+    Category.query(on: req.db).all().flatMap { categories in
+      let context = AllCategoriesContext(categories: categories)
+      return req.view.render("allCategories", context)
     }
   }
-
-  func createAcronymHandler(_ req: Request) throws -> Future<View> {
-    let token = try CryptoRandom().generateData(count: 16).base64EncodedString()
+  
+  func categoryHandler(_ req: Request) -> EventLoopFuture<View> {
+    Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { category in
+      category.$acronyms.get(on: req.db).flatMap { acronyms in
+        let context = CategoryContext(title: category.name, category: category, acronyms: acronyms)
+        return req.view.render("category", context)
+      }
+    }
+  }
+  
+  func createAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
+    let token = [UInt8].random(count: 16).base64
     let context = CreateAcronymContext(csrfToken: token)
-    try req.session()["CSRF_TOKEN"] = token
-    return try req.view().render("createAcronym", context)
+    req.session.data["CSRF_TOKEN"] = token
+    return req.view.render("createAcronym", context)
   }
-
-  func createAcronymPostHandler(_ req: Request, data: CreateAcronymData) throws -> Future<Response> {
-    let expectedToken = try req.session()["CSRF_TOKEN"]
-    try req.session()["CSRF_TOKEN"] = nil
-    guard let csrfToken = data.csrfToken, expectedToken == csrfToken else {
+  
+  func createAcronymPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let data = try req.content.decode(CreateAcronymFormData.self)
+    let user = try req.auth.require(User.self)
+    
+    let expectedToken = req.session.data["CSRF_TOKEN"]
+    req.session.data["CSRF_TOKEN"] = nil
+    guard let csrfToken = data.csrfToken,
+          expectedToken == csrfToken else {
       throw Abort(.badRequest)
     }
-    let user = try req.requireAuthenticated(User.self)
+    
     let acronym = try Acronym(short: data.short, long: data.long, userID: user.requireID())
-    return acronym.save(on: req).flatMap(to: Response.self) { acronym in
+    return acronym.save(on: req.db).flatMap {
       guard let id = acronym.id else {
-        throw Abort(.internalServerError)
+        return req.eventLoop.future(error: Abort(.internalServerError))
       }
-      var categorySaves: [Future<Void>] = []
+      var categorySaves = [EventLoopFuture<Void>]()
       for category in data.categories ?? [] {
-        try categorySaves.append(
-          Category.addCategory(category, to: acronym, on: req))
+        categorySaves.append(Category.addCategory(category, to: acronym, on: req))
       }
       let redirect = req.redirect(to: "/acronyms/\(id)")
-      return categorySaves.flatten(on: req).transform(to: redirect)
+      return categorySaves.flatten(on: req.eventLoop).transform(to: redirect)
     }
   }
-
-  func editAcronymHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(Acronym.self).flatMap(to: View.self) { acronym in
-      let categories = try acronym.categories.query(on: req).all()
-      let context = EditAcronymContext(acronym: acronym, categories: categories)
-      return try req.view().render("createAcronym", context)
-    }
-  }
-
-  func editAcronymPostHandler(_ req: Request) throws -> Future<Response> {
-    return try flatMap(to: Response.self, req.parameters.next(Acronym.self),
-                       req.content.decode(CreateAcronymData.self)) { acronym, data in
-      let user = try req.requireAuthenticated(User.self)
-      acronym.short = data.short
-      acronym.long = data.long
-      acronym.userID = try user.requireID()
-
-      guard let id = acronym.id else {
-        throw Abort(.internalServerError)
+  
+  func editAcronymHandler(_ req: Request) -> EventLoopFuture<View> {
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
+      acronym.$categories.get(on: req.db).flatMap { categories in
+        let context = EditAcronymContext(acronym: acronym, categories: categories)
+        return req.view.render("createAcronym", context)
       }
-
-      return acronym.save(on: req).flatMap(to: [Category].self) { _ in
-        try acronym.categories.query(on: req).all()
-      }.flatMap(to: Response.self) { existingCategories in
-        let existingStringArray = existingCategories.map { $0.name }
-
+    }
+  }
+  
+  func editAcronymPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let user = try req.auth.require(User.self)
+    let userID = try user.requireID()
+    let updateData = try req.content.decode(CreateAcronymFormData.self)
+    return Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
+      acronym.short = updateData.short
+      acronym.long = updateData.long
+      acronym.$user.id = userID
+      guard let id = acronym.id else {
+        return req.eventLoop.future(error: Abort(.internalServerError))
+      }
+      return acronym.save(on: req.db).flatMap {
+        acronym.$categories.get(on: req.db)
+      }.flatMap { existingCategories in
+        let existingStringArray = existingCategories.map {
+          $0.name
+        }
+        
         let existingSet = Set<String>(existingStringArray)
-        let newSet = Set<String>(data.categories ?? [])
-
+        let newSet = Set<String>(updateData.categories ?? [])
+        
         let categoriesToAdd = newSet.subtracting(existingSet)
         let categoriesToRemove = existingSet.subtracting(newSet)
-
-        var categoryResults: [Future<Void>] = []
+        
+        var categoryResults = [EventLoopFuture<Void>]()
         for newCategory in categoriesToAdd {
-          categoryResults.append(try Category.addCategory(newCategory, to: acronym, on: req))
+          categoryResults.append(Category.addCategory(newCategory, to: acronym, on: req))
         }
-
+        
         for categoryNameToRemove in categoriesToRemove {
-          let categoryToRemove = existingCategories.first { $0.name == categoryNameToRemove }
+          let categoryToRemove = existingCategories.first {
+            $0.name == categoryNameToRemove
+          }
           if let category = categoryToRemove {
-            categoryResults.append(acronym.categories.detach(category, on: req))
+            categoryResults.append(
+              acronym.$categories.detach(category, on: req.db))
           }
         }
-
+        
         let redirect = req.redirect(to: "/acronyms/\(id)")
-        return categoryResults.flatten(on: req).transform(to: redirect)
+        return categoryResults.flatten(on: req.eventLoop).transform(to: redirect)
       }
     }
   }
-
-  func deleteAcronymHandler(_ req: Request) throws -> Future<Response> {
-    return try req.parameters.next(Acronym.self).delete(on: req).transform(to: req.redirect(to: "/"))
+  
+  func deleteAcronymHandler(_ req: Request) -> EventLoopFuture<Response> {
+    Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
+      acronym.delete(on: req.db).transform(to: req.redirect(to: "/"))
+    }
   }
-
-  func loginHandler(_ req: Request) throws -> Future<View> {
+  
+  func loginHandler(_ req: Request) throws -> EventLoopFuture<Response> {
     let context: LoginContext
-    if req.query[Bool.self, at: "error"] != nil {
-      context = LoginContext(loginError: true)
+    let siwaContext = try buildSIWAContext(on: req)
+    if let error = req.query[Bool.self, at: "error"], error {
+      context = LoginContext(loginError: true, siwaContext: siwaContext)
     } else {
-      context = LoginContext()
+      context = LoginContext(siwaContext: siwaContext)
     }
-    return try req.view().render("login", context)
+    return req.view.render("login", context).encodeResponse(for: req).map { response in
+      let expiryDate = Date().addingTimeInterval(300)
+      let cookie = HTTPCookies.Value(string: siwaContext.state, expires: expiryDate, maxAge: 300, isHTTPOnly: true, sameSite: HTTPCookies.SameSitePolicy.none)
+      response.cookies["SIWA_STATE"] = cookie
+      return response
+    }
   }
-
-  func loginPostHandler(_ req: Request, userData: LoginPostData) throws -> Future<Response> {
-    return User.authenticate(username: userData.username, password: userData.password,
-                             using: BCryptDigest(), on: req).map(to: Response.self) { user in
-      guard let user = user else {
-        return req.redirect(to: "/login?error")
+  
+  func loginPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    if req.auth.has(User.self) {
+      return req.eventLoop.future(req.redirect(to: "/"))
+    } else {
+      let siwaContext = try buildSIWAContext(on: req)
+      let context = LoginContext(loginError: true, siwaContext: siwaContext)
+      return req.view.render("login", context).encodeResponse(for: req).map { response in
+        let expiryDate = Date().addingTimeInterval(300)
+        let cookie = HTTPCookies.Value(string: siwaContext.state, expires: expiryDate, maxAge: 300, isHTTPOnly: true, sameSite: HTTPCookies.SameSitePolicy.none)
+        response.cookies["SIWA_STATE"] = cookie
+        return response
       }
-      try req.authenticateSession(user)
-      return req.redirect(to: "/")
     }
   }
-
-  func logoutHandler(_ req: Request) throws -> Response {
-    try req.unauthenticateSession(User.self)
+  
+  func logoutHandler(_ req: Request) -> Response {
+    req.auth.logout(User.self)
     return req.redirect(to: "/")
   }
-
-  func registerHandler(_ req: Request) throws -> Future<View> {
+  
+  func registerHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let siwaContext = try buildSIWAContext(on: req)
     let context: RegisterContext
     if let message = req.query[String.self, at: "message"] {
-      context = RegisterContext(message: message)
+      context = RegisterContext(message: message, siwaContext: siwaContext)
     } else {
-      context = RegisterContext()
+      context = RegisterContext(siwaContext: siwaContext)
     }
-    return try req.view().render("register", context)
+    return req.view.render("register", context).encodeResponse(for: req).map { response in
+      let expiryDate = Date().addingTimeInterval(300)
+      let cookie = HTTPCookies.Value(string: siwaContext.state, expires: expiryDate, maxAge: 300, isHTTPOnly: true, sameSite: HTTPCookies.SameSitePolicy.none)
+      response.cookies["SIWA_STATE"] = cookie
+      return response
+    }
   }
-
-  func registerPostHandler(_ req: Request, data: RegisterData) throws -> Future<Response> {
+  
+  func registerPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
     do {
-      try data.validate()
-    } catch (let error) {
-      let redirect: String
-      if let error = error as? ValidationError,
-        let message = error.reason.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
-        redirect = "/register?message=\(message)"
-      } else {
-        redirect = "/register?message=Unknown+error"
-      }
-      return req.future(req.redirect(to: redirect))
+      try RegisterData.validate(content: req)
+    } catch let error as ValidationsError {
+      let message = error.description.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "Unknown error"
+      return req.eventLoop.future(req.redirect(to: "/register?message=\(message)"))
     }
-
-    let password = try BCrypt.hash(data.password)
-    let user = User(name: data.name, username: data.username, password: password, email: data.emailAddress)
-    return user.save(on: req).map(to: Response.self) { user in
-      try req.authenticateSession(user)
+    let data = try req.content.decode(RegisterData.self)
+    let password = try Bcrypt.hash(data.password)
+    let user = User(
+      name: data.name,
+      username: data.username,
+      password: password,
+      email: data.emailAddress)
+    return user.save(on: req.db).map {
+      req.auth.login(user)
       return req.redirect(to: "/")
     }
   }
 
-  func forgottenPasswordHandler(_ req: Request) throws -> Future<View> {
-    return try req.view().render("forgottenPassword", ["title": "Reset Your Password"])
+  func appleAuthCallbackHandler(_ req: Request) throws -> EventLoopFuture<View> {
+    let siwaData = try req.content.decode(AppleAuthorizationResponse.self)
+    guard let sessionState = req.cookies["SIWA_STATE"]?.string, !sessionState.isEmpty, sessionState == siwaData.state else {
+      req.logger.warning("SIWA not does not exists or does not match")
+      throw Abort(.unauthorized)
+    }
+    let context = SIWAHandleContext(token: siwaData.idToken, email: siwaData.user?.email, firstName: siwaData.user?.name?.firstName, lastName: siwaData.user?.name?.lastName)
+    return req.view.render("siwaHandler", context)
   }
 
-  func forgottenPasswordPostHandler(_ req: Request) throws -> Future<View> {
-    let email = try req.content.syncGet(String.self, at: "email")
-    return User.query(on: req).filter(\.email == email).first().flatMap(to: View.self) { user in
-      guard let user = user else {
-        return try req.view().render("forgottenPasswordConfirmed", ["title": "Password Reset Email Sent"])
+  func appleAuthRedirectHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let data = try req.content.decode(SIWARedirectData.self)
+    guard let appIdentifier = Environment.get("WEBSITE_APPLICATION_IDENTIFIER") else {
+      throw Abort(.internalServerError)
+    }
+    return req.jwt.apple.verify(data.token, applicationIdentifier: appIdentifier).flatMap { siwaToken in
+      User.query(on: req.db).filter(\.$siwaIdentifier == siwaToken.subject.value).first().flatMap { user in
+        let userFuture: EventLoopFuture<User>
+        if let user = user {
+          userFuture = req.eventLoop.future(user)
+        } else {
+          guard let email = data.email, let firstName = data.firstName, let lastName = data.lastName else {
+            return req.eventLoop.future(error: Abort(.badRequest))
+          }
+          let user = User(name: "\(firstName) \(lastName)", username: email, password: UUID().uuidString, siwaIdentifier: siwaToken.subject.value, email: email)
+          userFuture = user.save(on: req.db).map { user }
+        }
+        return userFuture.map { user in
+          req.auth.login(user)
+          return req.redirect(to: "/")
+        }
       }
+    }
+  }
 
-      let resetTokenString = try CryptoRandom().generateData(count: 32).base32EncodedString()
-      let resetToken = try ResetPasswordToken(token: resetTokenString, userID: user.requireID())
-      return resetToken.save(on: req).flatMap(to: View.self) { _ in
+  private func buildSIWAContext(on req: Request) throws -> SIWAContext {
+    let state = [UInt8].random(count: 32).base64
+    let scopes = "name email"
+    guard let clientID = Environment.get("WEBSITE_APPLICATION_IDENTIFIER") else {
+      req.logger.error("WEBSITE_APPLICATION_IDENTIFIER not set")
+      throw Abort(.internalServerError)
+    }
+    guard let redirectURI = Environment.get("SIWA_REDIRECT_URL") else {
+      req.logger.error("SIWA_REDIRECT_URL not set")
+      throw Abort(.internalServerError)
+    }
+    let siwa = SIWAContext(clientID: clientID, scopes: scopes, redirectURI: redirectURI, state: state)
+    return siwa
+  }
+
+  func forgottenPasswordHandler(_ req: Request) -> EventLoopFuture<View> {
+    req.view.render("forgottenPassword", ["title": "Reset Your Password"])
+  }
+
+  func forgottenPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<View> {
+    let email = try req.content.get(String.self, at: "email")
+    return User.query(on: req.db).filter(\.$email == email).first().flatMap { user in
+      guard let user = user else {
+        return req.view.render("forgottenPasswordConfirmed", ["title": "Password Reset Email Sent"])
+      }
+      let resetTokenString = Data([UInt8].random(count: 32)).base32EncodedString()
+      let resetToken: ResetPasswordToken
+      do {
+        resetToken = try ResetPasswordToken(token: resetTokenString, userID: user.requireID())
+      } catch {
+        return req.eventLoop.future(error: error)
+      }
+      return resetToken.save(on: req.db).flatMap {
         let emailContent = """
-        <p>You've requested to reset your password. <a href=\"http://localhost:8080/resetPassword?token=\(resetTokenString)\">Click here</a> to reset your password.</p>
+        <p>You've requested to reset your password. <a
+        href="http://localhost:8080/resetPassword?\
+        token=\(resetTokenString)">
+        Click here</a> to reset your password.</p>
         """
         let emailAddress = EmailAddress(email: user.email, name: user.name)
         let fromEmail = EmailAddress(email: "0xtimc@gmail.com", name: "Vapor TIL")
         let emailConfig = Personalization(to: [emailAddress], subject: "Reset Your Password")
-        let email = SendGridEmail(personalizations: [emailConfig], from: fromEmail, content: [["type": "text/html",
-                                                                                               "value": emailContent]])
-        let sendGridClient = try req.make(SendGridClient.self)
-        return try sendGridClient.send([email], on: req.eventLoop).flatMap(to: View.self) { _ in
-          return try req.view().render("forgottenPasswordConfirmed", ["title": "Password Reset Email Sent"])
+        let email = SendGridEmail(personalizations: [emailConfig], from: fromEmail,
+                                  content: [["type": "text/html", "value": emailContent]])
+        let emailSend: EventLoopFuture<Void>
+        do {
+          emailSend = try req.application.sendgrid.client.send(email: email, on: req.eventLoop)
+        } catch {
+          return req.eventLoop.future(error: error)
+        }
+        return emailSend.flatMap {
+          req.view.render("forgottenPasswordConfirmed", ["title": "Password Reset Email Sent"])
         }
       }
     }
   }
 
-  func resetPasswordHandler(_ req: Request) throws -> Future<View> {
-    guard let token = req.query[String.self, at: "token"] else {
-      return try req.view().render("resetPassword", ResetPasswordContext(error: true))
+  func resetPasswordHandler(_ req: Request) -> EventLoopFuture<View> {
+    guard let token = try? req.query.get(String.self, at: "token") else {
+      return req.view.render(
+        "resetPassword",
+        ResetPasswordContext(error: true)
+      )
     }
-    return ResetPasswordToken.query(on: req).filter(\.token == token).first().map(to: ResetPasswordToken.self) { token in
-      guard let token = token else {
-        throw Abort.redirect(to: "/")
+    return ResetPasswordToken.query(on: req.db).filter(\.$token == token).first()
+      .unwrap(or: Abort.redirect(to: "/"))
+      .flatMap { token in
+        token.$user.get(on: req.db).flatMap { user in
+          do {
+            try req.session.set("ResetPasswordUser", to: user)
+          } catch {
+            return req.eventLoop.future(error: error)
+          }
+          return token.delete(on: req.db)
+        }
+      }.flatMap {
+        req.view.render("resetPassword", ResetPasswordContext()
+        )
       }
-      return token
-    }.flatMap { token in
-      return token.user.get(on: req).flatMap { user in
-        try req.session().set("ResetPasswordUser", to: user)
-        return token.delete(on: req)
-      }
-    }.flatMap {
-      try req.view().render("resetPassword", ResetPasswordContext())
-    }
   }
 
-  func resetPasswordPostHandler(_ req: Request, data: ResetPasswordData) throws -> Future<Response> {
+  func resetPasswordPostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let data = try req.content.decode(ResetPasswordData.self)
     guard data.password == data.confirmPassword else {
-      return try req.view().render("resetPassword", ResetPasswordContext(error: true)).encode(for: req)
+      return req.view.render("resetPassword", ResetPasswordContext(error: true)).encodeResponse(for: req)
     }
-    let resetPasswordUser = try req.session().get("ResetPasswordUser", as: User.self)
-    try req.session()["ResetPasswordUser"] = nil
-    let newPassword = try BCrypt.hash(data.password)
-    resetPasswordUser.password = newPassword
-    return resetPasswordUser.save(on: req).transform(to: req.redirect(to: "/login"))
+    let resetPasswordUser = try req.session.get("ResetPasswordUser", as: User.self)
+    req.session.data["ResetPasswordUser"] = nil
+    let newPassword = try Bcrypt.hash(data.password)
+    return try User.query(on: req.db)
+      .filter(\.$id == resetPasswordUser.requireID())
+      .set(\.$password, to: newPassword)
+      .update()
+      .transform(to: req.redirect(to: "/login"))
   }
 
-  func addProfilePictureHandler(_ req: Request) throws -> Future<View> {
-    return try req.parameters.next(User.self).flatMap { user in
-      try req.view().render("addProfilePicture", ["title": "Add Profile Picture", "username": user.name])
+  func addProfilePictureHandler(_ req: Request) -> EventLoopFuture<View> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      req.view.render("addProfilePicture", ["title": "Add Profile Picture", "username": user.name])
     }
   }
 
-  func addProfilePicturePostHandler(_ req: Request) throws -> Future<Response> {
-    return try flatMap(to: Response.self, req.parameters.next(User.self), req.content.decode(ImageUploadData.self)) { user, imageData in
-      let workPath = try req.make(DirectoryConfig.self).workDir
-      let name = try "\(user.requireID())-\(UUID().uuidString).jpg"
-      let path = workPath + self.imageFolder + name
-      FileManager().createFile(atPath: path, contents: imageData.picture, attributes: nil)
+  func addProfilePicturePostHandler(_ req: Request) throws -> EventLoopFuture<Response> {
+    let data = try req.content.decode(ImageUploadData.self)
+    return User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
+      let userID: UUID
+      do {
+        userID = try user.requireID()
+      } catch {
+        return req.eventLoop.future(error: error)
+      }
+      let name = "\(userID)-\(UUID()).jpg"
+      let path = req.application.directory.workingDirectory + self.imageFolder + name
       user.profilePicture = name
-      let redirect = try req.redirect(to: "/users/\(user.requireID())")
-      return user.save(on: req).transform(to: redirect)
+      return req.fileio.writeFile(.init(data: data.picture), at: path).flatMap {
+        let redirect = req.redirect(to: "/users/\(userID)")
+        return user.save(on: req.db).transform(to: redirect)
+      }
     }
   }
 
-  func getUsersProfilePictureHandler(_ req: Request) throws -> Future<Response> {
-    return try req.parameters.next(User.self).flatMap(to: Response.self) { user in
+  func getUsersProfilePictureHandler(_ req: Request) -> EventLoopFuture<Response> {
+    User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMapThrowing { user in
       guard let filename = user.profilePicture else {
         throw Abort(.notFound)
       }
-      let path = try req.make(DirectoryConfig.self).workDir + self.imageFolder + filename
-      return try req.streamFile(at: path)
+      let path = req.application.directory.workingDirectory + self.imageFolder + filename
+      return req.fileio.streamFile(at: path)
     }
   }
 }
@@ -355,7 +467,7 @@ struct AcronymContext: Encodable {
   let title: String
   let acronym: Acronym
   let user: User
-  let categories: Future<[Category]>
+  let categories: [Category]
 }
 
 struct UserContext: Encodable {
@@ -372,13 +484,13 @@ struct AllUsersContext: Encodable {
 
 struct AllCategoriesContext: Encodable {
   let title = "All Categories"
-  let categories: Future<[Category]>
+  let categories: [Category]
 }
 
 struct CategoryContext: Encodable {
   let title: String
   let category: Category
-  let acronyms: Future<[Acronym]>
+  let acronyms: [Acronym]
 }
 
 struct CreateAcronymContext: Encodable {
@@ -390,10 +502,10 @@ struct EditAcronymContext: Encodable {
   let title = "Edit Acronym"
   let acronym: Acronym
   let editing = true
-  let categories: Future<[Category]>
+  let categories: [Category]
 }
 
-struct CreateAcronymData: Content {
+struct CreateAcronymFormData: Content {
   let short: String
   let long: String
   let categories: [String]?
@@ -403,23 +515,22 @@ struct CreateAcronymData: Content {
 struct LoginContext: Encodable {
   let title = "Log In"
   let loginError: Bool
-
-  init(loginError: Bool = false) {
+  let siwaContext: SIWAContext
+  
+  init(loginError: Bool = false, siwaContext: SIWAContext) {
     self.loginError = loginError
+    self.siwaContext = siwaContext
   }
-}
-
-struct LoginPostData: Content {
-  let username: String
-  let password: String
 }
 
 struct RegisterContext: Encodable {
   let title = "Register"
   let message: String?
+  let siwaContext: SIWAContext
 
-  init(message: String? = nil) {
+  init(message: String? = nil, siwaContext: SIWAContext) {
     self.message = message
+    self.siwaContext = siwaContext
   }
 }
 
@@ -431,20 +542,111 @@ struct RegisterData: Content {
   let emailAddress: String
 }
 
-extension RegisterData: Validatable, Reflectable {
-  static func validations() throws -> Validations<RegisterData> {
-    var validations = Validations(RegisterData.self)
-    try validations.add(\.name, .ascii)
-    try validations.add(\.username, .alphanumeric && .count(3...))
-    try validations.add(\.password, .count(8...))
-    try validations.add(\.emailAddress, .email)
-    validations.add("passwords match") { model in
-      guard model.password == model.confirmPassword else {
-        throw BasicValidationError("passwords don’t match")
-      }
-    }
-    return validations
+extension RegisterData: Validatable {
+  public static func validations(_ validations: inout Validations) {
+    validations.add("name", as: String.self, is: .ascii)
+    validations.add("username", as: String.self, is: .alphanumeric && .count(3...))
+    validations.add("password", as: String.self, is: .count(8...))
+    validations.add("zipCode", as: String.self, is: .zipCode, required: false)
+    validations.add("emailAddress", as: String.self, is: .email)
   }
+}
+
+extension ValidatorResults {
+  struct ZipCode {
+    let isValidZipCode: Bool
+  }
+}
+
+extension ValidatorResults.ZipCode: ValidatorResult {
+  var isFailure: Bool {
+    !self.isValidZipCode
+  }
+
+  var successDescription: String? {
+    "is a valid zip code"
+  }
+
+  var failureDescription: String? {
+    "is not a valid zip code"
+  }
+}
+
+extension Validator where T == String {
+  private static var zipCodeRegex: String {
+    "^\\d{5}(?:[-\\s]\\d{4})?$"
+  }
+
+  public static var zipCode: Validator<T> {
+    Validator { input -> ValidatorResult in
+      guard
+        let range = input.range(of: self.zipCodeRegex, options: [.regularExpression]),
+        range.lowerBound == input.startIndex && range.upperBound == input.endIndex
+      else {
+        return ValidatorResults.ZipCode(isValidZipCode: false)
+      }
+      return ValidatorResults.ZipCode(isValidZipCode: true)
+    }
+  }
+}
+
+struct AppleAuthorizationResponse: Decodable {
+  struct User: Decodable {
+    struct Name: Decodable {
+      let firstName: String?
+      let lastName: String?
+    }
+    let email: String
+    let name: Name?
+  }
+
+  let code: String
+  let state: String
+  let idToken: String
+  let user: User?
+
+  enum CodingKeys: String, CodingKey {
+    case code
+    case state
+    case idToken = "id_token"
+    case user
+  }
+
+  init(from decoder: Decoder) throws {
+
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    self.code = try values.decode(String.self, forKey: .code)
+    self.state = try values.decode(String.self, forKey: .state)
+    self.idToken = try values.decode(String.self, forKey: .idToken)
+
+    if let jsonString = try values.decodeIfPresent(String.self, forKey: .user),
+       let jsonData = jsonString.data(using: .utf8) {
+      self.user = try JSONDecoder().decode(User.self, from: jsonData)
+    } else {
+      self.user = nil
+    }
+  }
+}
+
+struct SIWAHandleContext: Encodable {
+  let token: String
+  let email: String?
+  let firstName: String?
+  let lastName: String?
+}
+
+struct SIWARedirectData: Content {
+  let token: String
+  let email: String?
+  let firstName: String?
+  let lastName: String?
+}
+
+struct SIWAContext: Encodable {
+  let clientID: String
+  let scopes: String
+  let redirectURI: String
+  let state: String
 }
 
 struct ResetPasswordContext: Encodable {

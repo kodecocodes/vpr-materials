@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,26 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentPostgreSQL
+import Fluent
+import Vapor
 
-final class ResetPasswordToken: Codable {
+final class ResetPasswordToken: Model, Content {
+  static let schema = "resetPasswordTokens"
+
+  @ID
   var id: UUID?
+
+  @Field(key: "token")
   var token: String
-  var userID: User.ID
-  
-  init(token: String, userID: User.ID) {
+
+  @Parent(key: "userID")
+  var user: User
+
+  init() {}
+
+  init(id: UUID? = nil, token: String, userID: User.IDValue) {
+    self.id = id
     self.token = token
-    self.userID = userID
-  }
-}
-
-extension ResetPasswordToken: PostgreSQLUUIDModel {}
-extension ResetPasswordToken: Migration {
-  static func prepare(on connection: PostgreSQLConnection) -> Future<Void> {
-    return Database.create(self, on: connection) { builder in
-      try addProperties(to: builder)
-      builder.reference(from: \.userID, to: \User.id)
-    }
-  }
-}
-
-extension ResetPasswordToken {
-  var user: Parent<ResetPasswordToken, User> {
-    return parent(\.userID)
+    self.$user.id = userID
   }
 }

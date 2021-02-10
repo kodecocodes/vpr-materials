@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Fluent
 import Vapor
 
-/// Creates an instance of Application. This is called from main.swift in the run target.
-public func app(_ env: Environment) throws -> Application {
-  var config = Config.default()
-  var env = env
-  var services = Services.default()
-  try configure(&config, &env, &services)
-  let app = try Application(config: config, environment: env, services: services)
-  try boot(app)
-  return app
+struct CreateAdminUser: Migration {
+  func prepare(on database: Database) -> EventLoopFuture<Void> {
+    let passwordHash: String
+    do {
+      passwordHash = try Bcrypt.hash("password")
+    } catch {
+      return database.eventLoop.future(error: error)
+    }
+    let user = User(name: "Admin", username: "admin", password: passwordHash, email: "admin@localhost.local")
+    return user.save(on: database)
+  }
+
+  func revert(on database: Database) -> EventLoopFuture<Void> {
+    User.query(on: database).filter(\.$username == "admin").delete()
+  }
 }
