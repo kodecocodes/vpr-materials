@@ -85,7 +85,13 @@ class LoginTableViewController: UITableViewController {
     }
     let scheme = "tilapp"
     let session = ASWebAuthenticationSession(url: googleAuthURL, callbackURLScheme: scheme) { callbackURL, error in
-      guard error == nil, let callbackURL = callbackURL else { return }
+      guard
+        error == nil,
+        let callbackURL = callbackURL
+      else {
+        return
+      }
+
       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems
       let token = queryItems?.first { $0.name == "token" }?.value
       Auth().token = token
@@ -105,7 +111,13 @@ class LoginTableViewController: UITableViewController {
     }
     let scheme = "tilapp"
     let session = ASWebAuthenticationSession(url: githubAuthURL, callbackURLScheme: scheme) { callbackURL, error in
-      guard error == nil, let callbackURL = callbackURL else { return }
+      guard
+        error == nil,
+        let callbackURL = callbackURL
+      else {
+        return
+      }
+
       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems
       let token = queryItems?.first { $0.name == "token" }?.value
       Auth().token = token
@@ -151,8 +163,10 @@ extension LoginTableViewController: ASAuthorizationControllerPresentationContext
 extension LoginTableViewController: ASAuthorizationControllerDelegate {
   func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
     if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
-      guard let identityToken = credential.identityToken,
-        let tokenString = String(data: identityToken, encoding: .utf8) else {
+      guard
+        let identityToken = credential.identityToken,
+        let tokenString = String(data: identityToken, encoding: .utf8)
+      else {
         print("Failed to get token from credential")
         return
       }
@@ -185,6 +199,6 @@ extension LoginTableViewController: ASAuthorizationControllerDelegate {
   }
 
   func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-    print("Error signing in with apple - \(error)")
+    print("Error signing in with Apple - \(error)")
   }
 }
