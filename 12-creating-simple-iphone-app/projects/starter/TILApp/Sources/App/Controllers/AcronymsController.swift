@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ struct AcronymsController: RouteCollection {
     acronymsRoutes.delete(":acronymID", "categories", ":categoryID", use: removeCategoriesHandler)
   }
 
-  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
     Acronym.query(on: req.db).all()
   }
 
@@ -56,7 +56,7 @@ struct AcronymsController: RouteCollection {
     return acronym.save(on: req.db).map { acronym }
   }
 
-  func getHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+  func getHandler(_ req: Request) -> EventLoopFuture<Acronym> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db)
     .unwrap(or: Abort(.notFound))
   }
@@ -75,7 +75,7 @@ struct AcronymsController: RouteCollection {
   }
 
   func deleteHandler(_ req: Request)
-    throws -> EventLoopFuture<HTTPStatus> {
+    -> EventLoopFuture<HTTPStatus> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db)
       .unwrap(or: Abort(.notFound))
       .flatMap { acronym in
@@ -95,17 +95,17 @@ struct AcronymsController: RouteCollection {
     }.all()
   }
 
-  func getFirstHandler(_ req: Request) throws -> EventLoopFuture<Acronym> {
+  func getFirstHandler(_ req: Request) -> EventLoopFuture<Acronym> {
     return Acronym.query(on: req.db)
       .first()
       .unwrap(or: Abort(.notFound))
   }
 
-  func sortedHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
-    return Acronym.query(on: req.db).sort(\.$short, .ascending).all()
+  func sortedHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
+    Acronym.query(on: req.db).sort(\.$short, .ascending).all()
   }
 
-  func getUserHandler(_ req: Request) throws -> EventLoopFuture<User> {
+  func getUserHandler(_ req: Request) -> EventLoopFuture<User> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db)
     .unwrap(or: Abort(.notFound))
     .flatMap { acronym in
@@ -113,7 +113,7 @@ struct AcronymsController: RouteCollection {
     }
   }
 
-  func addCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+  func addCategoriesHandler(_ req: Request) -> EventLoopFuture<HTTPStatus> {
     let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound))
     let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound))
     return acronymQuery.and(categoryQuery).flatMap { acronym, category in
@@ -121,7 +121,7 @@ struct AcronymsController: RouteCollection {
     }
   }
 
-  func getCategoriesHandler(_ req: Request) throws -> EventLoopFuture<[Category]> {
+  func getCategoriesHandler(_ req: Request) -> EventLoopFuture<[Category]> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db)
     .unwrap(or: Abort(.notFound))
     .flatMap { acronym in
@@ -129,7 +129,7 @@ struct AcronymsController: RouteCollection {
     }
   }
 
-  func removeCategoriesHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+  func removeCategoriesHandler(_ req: Request) -> EventLoopFuture<HTTPStatus> {
     let acronymQuery = Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound))
     let categoryQuery = Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound))
     return acronymQuery.and(categoryQuery).flatMap { acronym, category in

@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,14 @@ struct WebsiteController: RouteCollection {
     routes.get("users", use: allUsersHandler)
   }
 
-  func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func indexHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.query(on: req.db).all().flatMap { acronyms in
       let context = IndexContext(title: "Home page", acronyms: acronyms)
       return req.view.render("index", context)
     }
   }
 
-  func acronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func acronymHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
       acronym.$user.get(on: req.db).flatMap { user in
         let context = AcronymContext(title: acronym.short, acronym: acronym, user: user)
@@ -52,7 +52,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func userHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func userHandler(_ req: Request) -> EventLoopFuture<View> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
       user.$acronyms.get(on: req.db).flatMap { acronyms in
         let context = UserContext(title: user.name, user: user, acronyms: acronyms)
@@ -61,7 +61,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func allUsersHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func allUsersHandler(_ req: Request) -> EventLoopFuture<View> {
     User.query(on: req.db).all().flatMap { users in
       let context = AllUsersContext(
         title: "All Users",

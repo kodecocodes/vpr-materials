@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -42,15 +42,15 @@ struct CategoriesController: RouteCollection {
     return category.save(on: req.db).map { category }
   }
   
-  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[Category]> {
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[Category]> {
     Category.query(on: req.db).all()
   }
   
-  func getHandler(_ req: Request) throws -> EventLoopFuture<Category> {
+  func getHandler(_ req: Request) -> EventLoopFuture<Category> {
     Category.find(req.parameters.get("categoryID"), on: req.db).unwrap(or: Abort(.notFound))
   }
   
-  func getAcronymsHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+  func getAcronymsHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
     Category.find(req.parameters.get("categoryID"), on: req.db)
       .unwrap(or: Abort(.notFound))
       .flatMap { category in

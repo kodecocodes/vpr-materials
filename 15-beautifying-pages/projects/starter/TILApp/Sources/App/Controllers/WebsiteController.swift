@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ struct WebsiteController: RouteCollection {
     routes.get("acronyms", ":acronymID", use: acronymHandler)
   }
 
-  func indexHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func indexHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.query(on: req.db).all().flatMap { acronyms in
       let acronymsData = acronyms.isEmpty ? nil : acronyms
       let context = IndexContext(title: "Home page", acronyms: acronymsData)
@@ -42,7 +42,7 @@ struct WebsiteController: RouteCollection {
     }
   }
 
-  func acronymHandler(_ req: Request) throws -> EventLoopFuture<View> {
+  func acronymHandler(_ req: Request) -> EventLoopFuture<View> {
     Acronym.find(req.parameters.get("acronymID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { acronym in
       acronym.$user.get(on: req.db).flatMap { user in
         let context = AcronymContext(title: acronym.short, acronym: acronym, user: user)

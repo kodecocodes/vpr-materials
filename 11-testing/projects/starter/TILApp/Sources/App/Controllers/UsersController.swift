@@ -1,4 +1,4 @@
-/// Copyright (c) 2020 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +43,15 @@ struct UsersController: RouteCollection {
     return user.save(on: req.db).map { user }
   }
   
-  func getAllHandler(_ req: Request) throws -> EventLoopFuture<[User]> {
+  func getAllHandler(_ req: Request) -> EventLoopFuture<[User]> {
     User.query(on: req.db).all()
   }
 
-  func getHandler(_ req: Request) throws -> EventLoopFuture<User> {
+  func getHandler(_ req: Request) -> EventLoopFuture<User> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound))
   }
   
-  func getAcronymsHandler(_ req: Request) throws -> EventLoopFuture<[Acronym]> {
+  func getAcronymsHandler(_ req: Request) -> EventLoopFuture<[Acronym]> {
     User.find(req.parameters.get("userID"), on: req.db).unwrap(or: Abort(.notFound)).flatMap { user in
       user.$acronyms.get(on: req.db)
     }
