@@ -77,9 +77,10 @@ struct ImperialController: RouteCollection {
     return try GitHub.getUser(on: request).flatMap { userInfo in
       return User.query(on: request.db).filter(\.$username == userInfo.login).first().flatMap { foundUser in
         guard let existingUser = foundUser else {
-          let user = User(name: userInfo.name,
-                          username: userInfo.login,
-                          password: UUID().uuidString)
+          let user = User(
+            name: userInfo.name,
+            username: userInfo.login,
+            password: UUID().uuidString)
           return user.save(on: request.db).flatMap {
             request.session.authenticate(user)
             return generateRedirect(on: request, for: user)
