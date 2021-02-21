@@ -36,6 +36,7 @@ final class PokeAPITests: XCTestCase {
     let app = Application()
     defer { app.shutdown() }
     try configure(app)
+    try app.autoMigrate().wait()
     let req = Request(application: app, on: app.eventLoopGroup.next())
     let isVerified = try req.pokeAPI.verify(name: "pikachu").wait()
     XCTAssertTrue(isVerified)
