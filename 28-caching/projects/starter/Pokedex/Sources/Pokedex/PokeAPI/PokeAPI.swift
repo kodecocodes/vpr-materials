@@ -49,7 +49,7 @@ public final class PokeAPI {
   /// - parameter name: The name to verify.
   public func verify(name: String) -> EventLoopFuture<Bool> {
     /// Query the PokeAPI.
-    return self.fetchPokemon(named: name).flatMapThrowing { res in
+    return fetchPokemon(named: name).flatMapThrowing { res in
       switch res.status.code {
       case 200..<300:
         /// The API returned 2xx which means this is a real Pokemon name
@@ -67,6 +67,6 @@ public final class PokeAPI {
   /// Fetches a pokemen with the supplied name from the PokeAPI.
   private func fetchPokemon(named name: String) -> EventLoopFuture<ClientResponse> {
     let name = name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-    return self.client.get("https://pokeapi.co/api/v2/pokemon/\(name)")
+    return client.get("https://pokeapi.co/api/v2/pokemon/\(name)")
   }
 }

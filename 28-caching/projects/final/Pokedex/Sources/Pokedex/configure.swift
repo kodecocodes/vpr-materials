@@ -39,7 +39,9 @@ public func configure(_ app: Application) throws {
   app.migrations.add(CreatePokemon())
   app.migrations.add(CacheEntry.migration)
   
-  /// Configure cache
+  try app.autoMigrate().wait()
+
+ /// Configure cache
   app.caches.use(.fluent)
   
   /// Register routes

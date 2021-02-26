@@ -38,6 +38,8 @@ public func configure(_ app: Application) throws {
   /// Configure migrations
   app.migrations.add(CreatePokemon())
   
+  try app.autoMigrate().wait()
+
   /// Register routes
   try routes(app)
 }

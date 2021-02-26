@@ -56,7 +56,7 @@ public final class PokeAPI {
     let name = name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
     
     /// Check cache first.
-    return self.cache.get(name, as: Bool.self).flatMap { verified in
+    return cache.get(name, as: Bool.self).flatMap { verified in
       if let verified = verified {
         return self.client.eventLoop.makeSucceededFuture(verified)
       } else {
@@ -71,7 +71,7 @@ public final class PokeAPI {
 
   private func uncachedVerify(name: String) -> EventLoopFuture<Bool> {
     /// Query the PokeAPI.
-    return self.fetchPokemon(named: name).flatMapThrowing { res -> Bool in
+    return fetchPokemon(named: name).flatMapThrowing { res -> Bool in
       switch res.status.code {
       case 200..<300:
         /// The API returned 2xx which means this is a real Pokemon name
@@ -88,6 +88,6 @@ public final class PokeAPI {
   
   /// Fetches a pokemen with the supplied name from the PokeAPI.
   private func fetchPokemon(named name: String) -> EventLoopFuture<ClientResponse> {
-    return self.client.get("https://pokeapi.co/api/v2/pokemon/\(name)")
+    return client.get("https://pokeapi.co/api/v2/pokemon/\(name)")
   }
 }
