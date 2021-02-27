@@ -1,7 +1,0 @@
-#set("content") {
-  <h1>#(category.name)</h1>
-
-  #embed("acronymsTable")
-}
-
-#embed("base")
