@@ -7,11 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		239B628925ED81BC0001ED7E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 239B628825ED81BC0001ED7E /* Assets.xcassets */; };
+		239B629025ED824C0001ED7E /* ShareTouch-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */; };
 		80AD85692584269A0022AEBC /* Color+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD85682584269A0022AEBC /* Color+Components.swift */; };
 		80AD85702584462F0022AEBC /* SharedInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD856F2584462F0022AEBC /* SharedInterface.swift */; };
 		80C1D9432583D2E100BE325D /* ShareTouchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C1D9422583D2E100BE325D /* ShareTouchApp.swift */; };
 		80C1D9452583D2E100BE325D /* ChooseColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C1D9442583D2E100BE325D /* ChooseColor.swift */; };
-		80C1D9472583D2E300BE325D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 80C1D9462583D2E300BE325D /* Assets.xcassets */; };
 		80C1D94A2583D2E300BE325D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 80C1D9492583D2E300BE325D /* Preview Assets.xcassets */; };
 		80C1D9532583E23300BE325D /* PointConversions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C1D9522583E23300BE325D /* PointConversions.swift */; };
 		80C1D9662583EFF600BE325D /* EagerAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C1D9652583EFF600BE325D /* EagerAnimation.swift */; };
@@ -23,14 +24,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		239B628825ED81BC0001ED7E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ShareTouch-Info.plist"; sourceTree = "<group>"; };
 		80AD85682584269A0022AEBC /* Color+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Components.swift"; sourceTree = "<group>"; };
 		80AD856F2584462F0022AEBC /* SharedInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedInterface.swift; sourceTree = "<group>"; };
 		80C1D93F2583D2E100BE325D /* ShareTouch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShareTouch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		80C1D9422583D2E100BE325D /* ShareTouchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareTouchApp.swift; sourceTree = "<group>"; };
 		80C1D9442583D2E100BE325D /* ChooseColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColor.swift; sourceTree = "<group>"; };
-		80C1D9462583D2E300BE325D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		80C1D9492583D2E300BE325D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		80C1D94B2583D2E300BE325D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		80C1D9522583E23300BE325D /* PointConversions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointConversions.swift; sourceTree = "<group>"; };
 		80C1D9652583EFF600BE325D /* EagerAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EagerAnimation.swift; sourceTree = "<group>"; };
 		80DD50DC258C258200CE165B /* ShareCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCoordinator.swift; sourceTree = "<group>"; };
@@ -75,9 +76,9 @@
 				80DD50DB258C257200CE165B /* ShareCoordinator */,
 				80DD50DA258C256D00CE165B /* Views */,
 				80C1D9422583D2E100BE325D /* ShareTouchApp.swift */,
-				80C1D9462583D2E300BE325D /* Assets.xcassets */,
-				80C1D94B2583D2E300BE325D /* Info.plist */,
+				239B628825ED81BC0001ED7E /* Assets.xcassets */,
 				80C1D9482583D2E300BE325D /* Preview Content */,
+				239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */,
 			);
 			path = ShareTouch;
 			sourceTree = "<group>";
@@ -201,8 +202,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				239B629025ED824C0001ED7E /* ShareTouch-Info.plist in Resources */,
+				239B628925ED81BC0001ED7E /* Assets.xcassets in Resources */,
 				80C1D94A2583D2E300BE325D /* Preview Assets.xcassets in Resources */,
-				80C1D9472583D2E300BE325D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
