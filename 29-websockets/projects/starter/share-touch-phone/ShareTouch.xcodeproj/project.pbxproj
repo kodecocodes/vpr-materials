@@ -25,19 +25,19 @@
 /* Begin PBXFileReference section */
 		239B628825ED81BC0001ED7E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ShareTouch-Info.plist"; sourceTree = "<group>"; };
-		80AD85682584269A0022AEBC /* Color+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Components.swift"; sourceTree = "<group>"; };
-		80AD856F2584462F0022AEBC /* SharedInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedInterface.swift; sourceTree = "<group>"; };
+		80AD85682584269A0022AEBC /* Color+Components.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = "Color+Components.swift"; sourceTree = "<group>"; tabWidth = 2; };
+		80AD856F2584462F0022AEBC /* SharedInterface.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = SharedInterface.swift; sourceTree = "<group>"; tabWidth = 2; };
 		80C1D93F2583D2E100BE325D /* ShareTouch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ShareTouch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		80C1D9422583D2E100BE325D /* ShareTouchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareTouchApp.swift; sourceTree = "<group>"; };
-		80C1D9442583D2E100BE325D /* ChooseColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseColor.swift; sourceTree = "<group>"; };
+		80C1D9422583D2E100BE325D /* ShareTouchApp.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ShareTouchApp.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80C1D9442583D2E100BE325D /* ChooseColor.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ChooseColor.swift; sourceTree = "<group>"; tabWidth = 2; };
 		80C1D9492583D2E300BE325D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		80C1D9522583E23300BE325D /* PointConversions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointConversions.swift; sourceTree = "<group>"; };
-		80C1D9652583EFF600BE325D /* EagerAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EagerAnimation.swift; sourceTree = "<group>"; };
-		80DD50DC258C258200CE165B /* ShareCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCoordinator.swift; sourceTree = "<group>"; };
-		80DD50E0258C265F00CE165B /* ParticipantsPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantsPad.swift; sourceTree = "<group>"; };
-		80DD50E3258C268C00CE165B /* SharingPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingPad.swift; sourceTree = "<group>"; };
-		80DD50E7258C26C300CE165B /* ShareCircle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCircle.swift; sourceTree = "<group>"; };
-		80DD50F7258C27DC00CE165B /* View+CornerMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+CornerMask.swift"; sourceTree = "<group>"; };
+		80C1D9522583E23300BE325D /* PointConversions.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = PointConversions.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80C1D9652583EFF600BE325D /* EagerAnimation.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = EagerAnimation.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80DD50DC258C258200CE165B /* ShareCoordinator.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ShareCoordinator.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80DD50E0258C265F00CE165B /* ParticipantsPad.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ParticipantsPad.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80DD50E3258C268C00CE165B /* SharingPad.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = SharingPad.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80DD50E7258C26C300CE165B /* ShareCircle.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ShareCircle.swift; sourceTree = "<group>"; tabWidth = 2; };
+		80DD50F7258C27DC00CE165B /* View+CornerMask.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = "View+CornerMask.swift"; sourceTree = "<group>"; tabWidth = 2; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

@@ -29,21 +29,22 @@
 import SwiftUI
 
 extension ColorComponents {
-    var color: Color {
-        Color(cgColor)
-    }
+  var color: Color {
+    Color(cgColor)
+  }
 
-    var cgColor: CGColor {
-        CGColor(red: red, green: green, blue: blue, alpha: alpha)
-    }
+  var cgColor: CGColor {
+    CGColor(red: red, green: green, blue: blue, alpha: alpha)
+  }
 }
 
 extension Color {
-    var components: ColorComponents {
-        let comps = UIColor(self).cgColor.components ?? [1, 0.8, 0, 1]
-        return ColorComponents(red: comps[0],
-                               green: comps[1],
-                               blue: comps[2],
-                               alpha: comps[3])
-    }
+  var components: ColorComponents {
+    let comps = UIColor(self).cgColor.components ?? [1, 0.8, 0, 1]
+    return ColorComponents(
+      red: comps[0],
+      green: comps[1],
+      blue: comps[2],
+      alpha: comps[3])
+  }
 }
