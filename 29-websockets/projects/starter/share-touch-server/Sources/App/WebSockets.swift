@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -31,44 +31,5 @@ import Vapor
 extension String: Error {}
 
 public func sockets(_ app: Application) {
-    app.webSocket("echo") { req, ws in
-        print("ws connected")
-        ws.onText { ws, text in
-            print("ws received: \(text)")
-            ws.send("echo: " + text)
-        }
-    }
-    
-    /// only one path, for a singular session per server
-    app.webSocket("session") { req, ws in
-        let color: ColorComponents
-        let position: RelativePoint
-        do {
-            color = try req.query.decode(ColorComponents.self)
-            position = try req.query.decode(RelativePoint.self)
-        } catch {
-            _ = ws.close(code: .unacceptableData)
-            return
-        }
-        print("new user joined with: \(color) at \(position)")
-
-        let newId = UUID().uuidString
-        TouchSessionManager.default.insert(id: newId, color: color, at: position, on: ws)
-
-        ws.onText { ws, text in
-            do {
-                let pt = try JSONDecoder().decode(
-                    RelativePoint.self,
-                    from: Data(text.utf8)
-                )
-                TouchSessionManager.default.update(id: newId, to: pt)
-            } catch {
-                ws.send("unsupported update: \(text)")
-            }
-        }
-
-        _ = ws.onClose.always { result in
-            TouchSessionManager.default.remove(id: newId)
-        }
-    }
+  
 }
