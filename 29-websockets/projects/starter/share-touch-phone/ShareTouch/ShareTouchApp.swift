@@ -50,5 +50,5 @@ struct ShareTouchApp: App {
 }
 
 extension Color {
-    static let background: Color = Color(red: 1, green: 0.988, blue: 0.966)
+    static let background = Color(red: 1, green: 0.988, blue: 0.966)
 }

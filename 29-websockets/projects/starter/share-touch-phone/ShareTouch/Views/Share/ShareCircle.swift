@@ -46,4 +46,3 @@ struct ShareCircle: View {
         .frame(width: 36, height: 36)
     }
 }
-

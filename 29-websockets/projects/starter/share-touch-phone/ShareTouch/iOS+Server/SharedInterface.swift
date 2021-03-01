@@ -72,7 +72,7 @@ struct SharedTouch: Codable {
 }
 
 struct ColorComponents: Codable {
-    let r, g, b, a: FloatPreference
+    let red, green, blue, alpha: FloatPreference
 }
 
 struct Message: Codable {
@@ -98,7 +98,7 @@ struct Message: Codable {
                 let point = try container.decode(RelativePoint.self, forKey: .moved)
                 return .moved(point)
             } .catch {
-                let _ = try container.decode(Bool.self, forKey: .left)
+                _ = try container.decode(Bool.self, forKey: .left)
                 return .left
             } .run()
         }
@@ -117,8 +117,7 @@ struct Message: Codable {
     }
 }
 
-
-// MARK:
+// MARK: 
 
 extension Array: Error where Element: Error {}
 

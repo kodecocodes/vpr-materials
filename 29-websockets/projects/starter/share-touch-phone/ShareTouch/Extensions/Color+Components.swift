@@ -34,17 +34,16 @@ extension ColorComponents {
     }
 
     var cgColor: CGColor {
-        CGColor(red: r, green: g, blue: b, alpha: a)
+        CGColor(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
 
 extension Color {
     var components: ColorComponents {
         let comps = UIColor(self).cgColor.components ?? [1, 0.8, 0, 1]
-        return ColorComponents(r: comps[0],
-                               g: comps[1],
-                               b: comps[2],
-                               a: comps[3])
+        return ColorComponents(red: comps[0],
+                               green: comps[1],
+                               blue: comps[2],
+                               alpha: comps[3])
     }
 }
-

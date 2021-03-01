@@ -64,7 +64,6 @@ struct ChooseColorView: View {
                     Spacer()
                 }
 
-
                 Spacer()
 
                 HStack {
@@ -109,7 +108,6 @@ extension Font {
         Font.system(size: size, weight: .bold, design: .monospaced)
     }
 }
-
 
 struct Root_Previews: PreviewProvider {
     static var previews: some View {

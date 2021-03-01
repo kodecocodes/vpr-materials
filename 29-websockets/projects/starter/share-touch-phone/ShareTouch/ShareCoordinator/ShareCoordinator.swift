@@ -70,7 +70,7 @@ class ShareCoordinator: NSObject, ObservableObject, URLSessionWebSocketDelegate 
         }
     }
 
-    private var ws: URLSessionWebSocketTask? = nil
+    private var ws: URLSessionWebSocketTask?
 
     private func on(msg: Message) {
         DispatchQueue.main.async {
@@ -85,14 +85,14 @@ class ShareCoordinator: NSObject, ObservableObject, URLSessionWebSocketDelegate 
         }
     }
 
-    private lazy var session: URLSession = URLSession(configuration: .default,
+    private lazy var session = URLSession(configuration: .default,
                                                       delegate: self,
                                                       delegateQueue: nil)
 
     func connect() {
         guard ws == nil else { fatalError() }
         let comps = color.components
-        let query = "r=\(comps.r)&g=\(comps.g)&b=\(comps.b)&a=\(comps.a)&x=\(position.x)&y=\(position.y)"
+        let query = "r=\(comps.red)&g=\(comps.green)&b=\(comps.blue)&a=\(comps.alpha)&x=\(position.x)&y=\(position.y)"
         let url = URL(string: "\(self.url)?\(query)")!
         let ws = session.webSocketTask(with: url)
         self.ws = ws
@@ -129,7 +129,6 @@ class ShareCoordinator: NSObject, ObservableObject, URLSessionWebSocketDelegate 
         }
     }
 
-
     deinit {
         ws?.cancel()
     }
@@ -161,10 +160,10 @@ extension Decodable {
         let js = JSONDecoder()
         let data: Data
         switch msg {
-        case .data(let d):
-            data = d
-        case .string(let s):
-            data = .init(s.utf8)
+        case .data(let dataProvided):
+            data = dataProvided
+        case .string(let stringProvided):
+            data = .init(stringProvided.utf8)
         @unknown default:
             throw "unknown"
         }

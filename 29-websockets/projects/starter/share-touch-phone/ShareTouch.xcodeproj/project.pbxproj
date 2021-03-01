@@ -151,6 +151,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 80C1D94E2583D2E300BE325D /* Build configuration list for PBXNativeTarget "ShareTouch" */;
 			buildPhases = (
+				239B629425ED83890001ED7E /* ShellScript */,
 				80C1D93B2583D2E100BE325D /* Sources */,
 				80C1D93C2583D2E100BE325D /* Frameworks */,
 				80C1D93D2583D2E100BE325D /* Resources */,
@@ -207,6 +208,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		239B629425ED83890001ED7E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -f ~/com.raywenderlich.swiftlint.yml ]; then\n  if which swiftlint >/dev/null; then\n    swiftlint --no-cache --config ~/com.raywenderlich.swiftlint.yml\n  fi\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		80C1D93B2583D2E100BE325D /* Sources */ = {
