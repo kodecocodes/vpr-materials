@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -31,41 +31,41 @@ import Foundation
 /// a property wrapper to ensure threadsafe access
 @propertyWrapper
 struct ThreadSafe<Value> {
-    private var value: Value
-    private let lock = Lock()
-
-    init(wrappedValue value: Value) {
-        self.value = value
-    }
-
-    var wrappedValue: Value {
-        get { return lock.run { return value } }
-        set { lock.run { value = newValue } }
-    }
+  private var value: Value
+  private let lock = Lock()
+  
+  init(wrappedValue value: Value) {
+    self.value = value
+  }
+  
+  var wrappedValue: Value {
+    get { return lock.run { return value } }
+    set { lock.run { value = newValue } }
+  }
 }
 
 /// simple wrapper of nslock, allows returning values within a locked block
 public struct Lock {
-    private let nslock = NSLock()
-    init() {}
-
-    public func lock() {
-        self.nslock.lock()
-    }
-
-    public func unlock() {
-        self.nslock.unlock()
-    }
-
-    public func run(_ closure: () throws -> Void) rethrows {
-        self.lock()
-        try closure()
-        self.unlock()
-    }
-
-    public func run<T>(_ closure: () throws -> T) rethrows -> T {
-        self.lock()
-        defer { self.unlock() }
-        return try closure()
-    }
+  private let nslock = NSLock()
+  init() {}
+  
+  public func lock() {
+    self.nslock.lock()
+  }
+  
+  public func unlock() {
+    self.nslock.unlock()
+  }
+  
+  public func run(_ closure: () throws -> Void) rethrows {
+    self.lock()
+    try closure()
+    self.unlock()
+  }
+  
+  public func run<T>(_ closure: () throws -> T) rethrows -> T {
+    self.lock()
+    defer { self.unlock() }
+    return try closure()
+  }
 }
