@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18D16E8725F44BBB006C308D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18D16E8625F44BBB006C308D /* LaunchScreen.storyboard */; };
 		239B628925ED81BC0001ED7E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 239B628825ED81BC0001ED7E /* Assets.xcassets */; };
 		80AD85692584269A0022AEBC /* Color+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD85682584269A0022AEBC /* Color+Components.swift */; };
 		80AD85702584462F0022AEBC /* SharedInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD856F2584462F0022AEBC /* SharedInterface.swift */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		18D16E8625F44BBB006C308D /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		239B628825ED81BC0001ED7E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ShareTouch-Info.plist"; sourceTree = "<group>"; };
 		80AD85682584269A0022AEBC /* Color+Components.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = "Color+Components.swift"; sourceTree = "<group>"; tabWidth = 2; };
@@ -78,6 +80,7 @@
 				239B628825ED81BC0001ED7E /* Assets.xcassets */,
 				80C1D9482583D2E300BE325D /* Preview Content */,
 				239B628F25ED824C0001ED7E /* ShareTouch-Info.plist */,
+				18D16E8625F44BBB006C308D /* LaunchScreen.storyboard */,
 			);
 			path = ShareTouch;
 			sourceTree = "<group>";
@@ -151,7 +154,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 80C1D94E2583D2E300BE325D /* Build configuration list for PBXNativeTarget "ShareTouch" */;
 			buildPhases = (
-				239B629425ED83890001ED7E /* ShellScript */,
+				239B629425ED83890001ED7E /* SwiftLint */,
 				80C1D93B2583D2E100BE325D /* Sources */,
 				80C1D93C2583D2E100BE325D /* Frameworks */,
 				80C1D93D2583D2E100BE325D /* Resources */,
@@ -173,6 +176,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1220;
 				LastUpgradeCheck = 1220;
+				ORGANIZATIONNAME = "Ray Wenderlich";
 				TargetAttributes = {
 					80C1D93E2583D2E100BE325D = {
 						CreatedOnToolsVersion = 12.2;
@@ -202,6 +206,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18D16E8725F44BBB006C308D /* LaunchScreen.storyboard in Resources */,
 				239B628925ED81BC0001ED7E /* Assets.xcassets in Resources */,
 				80C1D94A2583D2E300BE325D /* Preview Assets.xcassets in Resources */,
 			);
@@ -210,7 +215,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		239B629425ED83890001ED7E /* ShellScript */ = {
+		239B629425ED83890001ED7E /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -219,6 +224,7 @@
 			);
 			inputPaths = (
 			);
+			name = SwiftLint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -374,7 +380,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"ShareTouch/Preview Content\"";
-				DEVELOPMENT_TEAM = Q32LXKR624;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "ShareTouch/ShareTouch-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -396,7 +402,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"ShareTouch/Preview Content\"";
-				DEVELOPMENT_TEAM = Q32LXKR624;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "ShareTouch/ShareTouch-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;

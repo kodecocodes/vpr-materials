@@ -40,7 +40,6 @@ struct ChooseColorView: View {
       }
       .edgesIgnoringSafeArea([.top, .bottom])
 
-      // swiftlint:disable:next trailing_closure
       VStack(spacing: 0) {
         VStack {
           Text("CHOOSE")
@@ -83,18 +82,16 @@ struct ChooseColorView: View {
       .background(Color.background)
       .frame(alignment: .top)
       .sheet(
-        isPresented: $presentSharePad,
-        content: {
-          ShareColorPad(color: $chosenColor)
-        }
-      )
+        isPresented: $presentSharePad) {
+        ShareColorPad(color: $chosenColor)
+      }
     }
   }
 }
 
 extension Text {
   func style(fontSize: CGFloat, _ weight: Font.Weight) -> some View {
-    self.font(.monospaced(size: fontSize))
+    font(.monospaced(size: fontSize))
       .fontWeight(.semibold)
       .minimumScaleFactor(0.5)
       .multilineTextAlignment(.center)

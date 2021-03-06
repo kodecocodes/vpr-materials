@@ -31,5 +31,4 @@ import Vapor
 extension String: Error {}
 
 public func sockets(_ app: Application) {
-  
 }

@@ -29,8 +29,10 @@
 #if os(iOS)
 
 import SwiftUI
+
 typealias FloatPreference = CGFloat
 typealias RelativePoint = UnitPoint
+
 extension UnitPoint: Codable {
   /// used just for mapping between the two
   private struct Mapping: Codable {
@@ -51,6 +53,7 @@ extension UnitPoint: Codable {
 #else
 
 typealias FloatPreference = Double
+
 /// a relative point
 struct RelativePoint: Codable {
   let x: FloatPreference

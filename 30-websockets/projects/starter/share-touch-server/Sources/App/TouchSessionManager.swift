@@ -40,6 +40,7 @@ final class TouchSessionManager {
   
   @ThreadSafe
   private var participants: [String: ActiveSession] = [:]
+  
   private func flush() {
     participants
       .filter { _, v in v.ws.isClosed }

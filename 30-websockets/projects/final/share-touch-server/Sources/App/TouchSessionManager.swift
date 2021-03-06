@@ -42,6 +42,7 @@ final class TouchSessionManager {
   
   @ThreadSafe
   private var participants: [String: ActiveSession] = [:]
+
   private func flush() {
     participants
       .filter { _, v in v.ws.isClosed }
@@ -58,17 +59,20 @@ final class TouchSessionManager {
   
   func insert(id: String, color: ColorComponents, at pt: RelativePoint, on ws: WebSocket) {
     /// notify existing users of new user
-    let start = SharedTouch(id: id,
-                            color: color,
-                            position: pt)
-    let msg = Message(participant: id,
-                      update: .joined(start))
+    let start = SharedTouch(
+      id: id,
+      color: color,
+      position: pt)
+    let msg = Message(
+      participant: id,
+      update: .joined(start))
     send(msg)
     
     /// notify new user of existing
     participants.values.map {
-      Message(participant: $0.touch.participant,
-              update: .joined($0.touch))
+      Message(
+        participant: $0.touch.participant,
+        update: .joined($0.touch))
     } .forEach { ws.send($0) }
     
     /// store new session

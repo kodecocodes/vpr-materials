@@ -50,22 +50,22 @@ public struct Lock {
   init() {}
   
   public func lock() {
-    self.nslock.lock()
+    nslock.lock()
   }
   
   public func unlock() {
-    self.nslock.unlock()
+    nslock.unlock()
   }
   
   public func run(_ closure: () throws -> Void) rethrows {
-    self.lock()
+    lock()
     try closure()
-    self.unlock()
+    unlock()
   }
   
   public func run<T>(_ closure: () throws -> T) rethrows -> T {
-    self.lock()
-    defer { self.unlock() }
+    lock()
+    defer { unlock() }
     return try closure()
   }
 }

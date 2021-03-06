@@ -41,7 +41,7 @@ class ShareCoordinator: NSObject, ObservableObject, URLSessionWebSocketDelegate 
   @Binding var color: Color
   @Published var position: UnitPoint = .center
 
-  private var cancellables = [AnyCancellable]()
+  private var cancellables: [AnyCancellable] = []
   let url: String
 
   init(url: String, color: Binding<Color>) {
@@ -64,7 +64,7 @@ class ShareCoordinator: NSObject, ObservableObject, URLSessionWebSocketDelegate 
       return
     }
 
-    self.websocket?.send(.string(str)) { err in
+    websocket?.send(.string(str)) { err in
       guard let err = err else { return }
       print("error: \(err)")
     }
