@@ -76,6 +76,13 @@ struct SharedTouch: Codable {
 
 struct ColorComponents: Codable {
   let red, green, blue, alpha: FloatPreference
+
+  enum CodingKeys: String, CodingKey {
+    case red = "r"
+    case green = "g"
+    case blue = "b"
+    case alpha = "a"
+  }
 }
 
 struct Message: Codable {
