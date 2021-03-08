@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2021 Razeware LLC
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,91 +26,60 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
-import FluentPostgreSQL
+import Fluent
+import FluentPostgresDriver
 import Vapor
 import Leaf
-import Authentication
 import Redis
 
-/// Called before your application initializes.
-public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
-  /// Register providers first
-  try services.register(FluentPostgreSQLProvider())
-  try services.register(LeafProvider())
-  try services.register(AuthenticationProvider())
-  try services.register(RedisProvider())
-
-  /// Register routes to the router
-  let router = EngineRouter.default()
-  try routes(router)
-  services.register(router, as: Router.self)
-
-  /// Register middleware
-  var middlewares = MiddlewareConfig() // Create _empty_ middleware config
-  middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
-  middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
-  middlewares.use(SessionsMiddleware.self)
-  services.register(middlewares)
-
-  // Configure a database
-  var databases = DatabasesConfig()
-  let databaseConfig: PostgreSQLDatabaseConfig
-  if let url = Environment.get("DATABASE_URL") {
-    databaseConfig = PostgreSQLDatabaseConfig(url: url)!
-  } else if let url = Environment.get("DB_POSTGRESQL") {
-    databaseConfig = PostgreSQLDatabaseConfig(url: url)!
-  } else {
-    let hostname = Environment.get("DATABASE_HOSTNAME") ?? "localhost"
-    let username = Environment.get("DATABASE_USER") ?? "vapor"
-    let password = Environment.get("DATABASE_PASSWORD") ?? "password"
-    let databaseName: String
-    let databasePort: Int
-    if (env == .testing) {
-      databaseName = "vapor-test"
-      if let testPort = Environment.get("DATABASE_PORT") {
-        databasePort = Int(testPort) ?? 5433
-      } else {
-        databasePort = 5433
-      }
+// configures your application
+public func configure(_ app: Application) throws {
+  // uncomment to serve files from /Public folder
+  app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+  
+  let databaseName: String
+  let databasePort: Int
+  if (app.environment == .testing) {
+    databaseName = "vapor-test"
+    if let testPort = Environment.get("DATABASE_PORT") {
+      databasePort = Int(testPort) ?? 5433
     } else {
-      databaseName = Environment.get("DATABASE_DB") ?? "vapor"
-      databasePort = 5432
+      databasePort = 5433
     }
-
-    databaseConfig = PostgreSQLDatabaseConfig(
-      hostname: hostname,
-      port: databasePort,
-      username: username,
-      database: databaseName,
-      password: password)
+  } else {
+    databaseName = "vapor_database"
+    databasePort = 5432
   }
-  let database = PostgreSQLDatabase(config: databaseConfig)
-  databases.add(database: database, as: .psql)
+
+  app.databases.use(.postgres(
+    hostname: Environment.get("DATABASE_HOST") ?? "localhost",
+    port: databasePort,
+    username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
+    password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
+    database: Environment.get("DATABASE_NAME") ?? databaseName
+  ), as: .psql)
+
+  let redisHostname = Environment.get("REDIS_HOSTNAME") ?? "localhost"
+  let redisConfig = try RedisConfiguration(hostname: redisHostname)
+  app.redis.configuration = redisConfig
+
+  app.migrations.add(CreateUser())
+  app.migrations.add(CreateAcronym())
+  app.migrations.add(CreateCategory())
+  app.migrations.add(CreateAcronymCategoryPivot())
+  app.migrations.add(CreateToken())
+  app.migrations.add(CreateAdminUser())
   
-  var redisConfig = RedisClientConfig()
-  if let redisHostname = Environment.get("REDIS_HOSTNAME") {
-    redisConfig.hostname = redisHostname
-  }
-  let redis = try RedisDatabase(config: redisConfig)
-  databases.add(database: redis, as: .redis)
+  app.logger.logLevel = .debug
   
-  services.register(databases)
+  try app.autoMigrate().wait()
 
-  /// Configure migrations
-  var migrations = MigrationConfig()
-  migrations.add(model: User.self, database: .psql)
-  migrations.add(model: Acronym.self, database: .psql)
-  migrations.add(model: Category.self, database: .psql)
-  migrations.add(model: AcronymCategoryPivot.self, database: .psql)
-  migrations.add(model: Token.self, database: .psql)
-  migrations.add(migration: AdminUser.self, database: .psql)
-  migrations.add(model: ResetPasswordToken.self, database: .psql)
-  services.register(migrations)
+  app.views.use(.leaf)
 
-  var commandConfig = CommandConfig.default()
-  commandConfig.useFluentCommands()
-  services.register(commandConfig)
+  app.sessions.use(.redis)
 
-  config.prefer(LeafRenderer.self, for: ViewRenderer.self)
-  config.prefer(RedisCache.self, for: KeyedCache.self)
+  app.middleware.use(app.sessions.middleware)
+  
+  // register routes
+  try routes(app)
 }
