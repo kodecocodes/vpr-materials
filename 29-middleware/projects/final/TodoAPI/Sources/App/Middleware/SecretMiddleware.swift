@@ -34,14 +34,6 @@ import Vapor
 
 /// Rejects requests that do not contain correct secret.
 final class SecretMiddleware: Middleware {
-  /// Create a new `SecretMiddleware` from environment variables.
-  static func detect() throws -> Self {
-    guard let secret = Environment.get("SECRET") else {
-      throw Abort(.internalServerError, reason: "No $SECRET set on environment. Use `export SECRET=<secret>`")
-    }
-    return .init(secret: secret)
-  }
-  
   /// The secret expected in the `"X-Secret"` header.
   let secret: String
 
@@ -60,6 +52,21 @@ final class SecretMiddleware: Middleware {
     }
 
     return next.respond(to: request)
+  }
+}
+
+extension SecretMiddleware {
+  static func detect() throws -> Self {
+    guard let secret = Environment.get("SECRET") else {
+      throw Abort(
+        .internalServerError, 
+        reason: """
+          No SECRET set on environment. \
+          Use export SECRET=<secret>
+          """)
+    }
+
+    return .init(secret: secret)
   }
 }
 
