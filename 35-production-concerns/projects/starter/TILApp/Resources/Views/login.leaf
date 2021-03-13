@@ -1,0 +1,37 @@
+<!-- 1 -->
+#extend("base"):
+  #export("content"):
+    <!-- 2 -->
+    <h1>#(title)</h1>
+
+    <!-- 3 -->
+    #if(loginError):
+      <div class="alert alert-danger" role="alert">
+        User authentication error. Either your username or
+        password was invalid.
+      </div>
+    #endif
+
+    <!-- 4 -->
+    <form method="post">
+      <!-- 5 -->
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" name="username" class="form-control"
+        id="username"/>
+      </div>
+
+      <!-- 6 -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password"
+        class="form-control" id="password"/>
+      </div>
+
+      <!-- 7 -->
+      <button type="submit" class="btn btn-primary">
+        Log In
+      </button>
+    </form>
+  #endexport
+#endextend
