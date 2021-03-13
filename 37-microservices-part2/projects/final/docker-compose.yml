@@ -1,0 +1,55 @@
+version: '3'
+services:
+  postgres:
+    image: "postgres"
+    environment:
+      - POSTGRES_DB=vapor_database
+      - POSTGRES_USER=vapor_username
+      - POSTGRES_PASSWORD=vapor_password
+  mysql:
+    image: "mysql"
+    environment:
+      - MYSQL_USER=vapor_username
+      - MYSQL_PASSWORD=vapor_password
+      - MYSQL_DATABASE=vapor_database
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+  redis:
+    image: "redis"
+  til-users:
+    depends_on:
+      - postgres
+      - redis
+    build:
+      context: ./TILAppUsers
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_HOST=postgres
+      - REDIS_HOSTNAME=redis
+      - PORT=8081
+      - ENVIRONMENT=production
+  til-acronyms:
+    depends_on:
+      - mysql
+      - til-users
+    build:
+      context: ./TILAppAcronyms
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_HOST=mysql
+      - PORT=8082
+      - ENVIRONMENT=production
+      - AUTH_HOSTNAME=til-users
+  til-api:
+    depends_on:
+      - til-users
+      - til-acronyms
+    ports:
+      - "8080:8080"
+    build:
+      context: ./TILAppAPI
+      dockerfile: Dockerfile
+    environment:
+      - USERS_HOSTNAME=til-users
+      - ACRONYMS_HOSTNAME=til-acronyms
+      - PORT=8080
+      - ENVIRONMENT=production
