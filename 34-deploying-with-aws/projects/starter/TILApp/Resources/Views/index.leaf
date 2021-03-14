@@ -1,0 +1,8 @@
+#extend("base"):
+  #export("content"):
+    <img src="/images/logo.png" class="mx-auto d-block" alt="TIL Logo" />
+
+    <h1>Acronyms</h1>
+    #extend("acronymsTable")
+  #endexport
+#endextend
