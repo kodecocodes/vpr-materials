@@ -1,0 +1,409 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		184EB0092088028C00CB1087 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 184EB0082088028C00CB1087 /* Assets.xcassets */; };
+		184EB00B2088029D00CB1087 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 184EB00A2088029D00CB1087 /* LaunchScreen.storyboard */; };
+		8043F2B21FDD75D800F5E0FA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8043F2B11FDD75D800F5E0FA /* AppDelegate.swift */; };
+		80BF78411FDDC4B600965AAE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 80BF78401FDDC4B600965AAE /* libz.tbd */; };
+		80D42229206B1F7D0001B21A /* HomeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 80D42228206B1F7D0001B21A /* HomeViewController.xib */; };
+		80F0C1791FDE669200211BA4 /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C16A1FDE669200211BA4 /* WebSocket.swift */; };
+		80F0C17A1FDE669200211BA4 /* WebServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C16B1FDE669200211BA4 /* WebServices.swift */; };
+		80F0C17B1FDE669200211BA4 /* ShareViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 80F0C16D1FDE669200211BA4 /* ShareViewController.xib */; };
+		80F0C17C1FDE669200211BA4 /* SessionEntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C16E1FDE669200211BA4 /* SessionEntryViewController.swift */; };
+		80F0C17D1FDE669200211BA4 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C16F1FDE669200211BA4 /* HomeViewController.swift */; };
+		80F0C17E1FDE669200211BA4 /* FollowViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 80F0C1701FDE669200211BA4 /* FollowViewController.xib */; };
+		80F0C17F1FDE669200211BA4 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C1711FDE669200211BA4 /* ShareViewController.swift */; };
+		80F0C1801FDE669200211BA4 /* FollowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C1721FDE669200211BA4 /* FollowViewController.swift */; };
+		80F0C1811FDE669200211BA4 /* SessionEntryViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 80F0C1731FDE669200211BA4 /* SessionEntryViewController.xib */; };
+		80F0C1821FDE669200211BA4 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C1751FDE669200211BA4 /* Models.swift */; };
+		80F0C1831FDE669200211BA4 /* URLSession+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C1771FDE669200211BA4 /* URLSession+Extensions.swift */; };
+		80F0C1841FDE669200211BA4 /* UIViewController+Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F0C1781FDE669200211BA4 /* UIViewController+Alert.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		184EB0082088028C00CB1087 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		184EB00A2088029D00CB1087 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8043F2AE1FDD75D800F5E0FA /* LocationTrackPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocationTrackPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8043F2B11FDD75D800F5E0FA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8043F2BD1FDD75D800F5E0FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		80BF78401FDDC4B600965AAE /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		80BF784A1FDDC88500965AAE /* libz.1.2.11.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.11.tbd; path = usr/lib/libz.1.2.11.tbd; sourceTree = SDKROOT; };
+		80BF784C1FDDC89E00965AAE /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		80D42228206B1F7D0001B21A /* HomeViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeViewController.xib; sourceTree = "<group>"; };
+		80F0C16A1FDE669200211BA4 /* WebSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocket.swift; sourceTree = "<group>"; };
+		80F0C16B1FDE669200211BA4 /* WebServices.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebServices.swift; sourceTree = "<group>"; };
+		80F0C16D1FDE669200211BA4 /* ShareViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ShareViewController.xib; sourceTree = "<group>"; };
+		80F0C16E1FDE669200211BA4 /* SessionEntryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionEntryViewController.swift; sourceTree = "<group>"; };
+		80F0C16F1FDE669200211BA4 /* HomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		80F0C1701FDE669200211BA4 /* FollowViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FollowViewController.xib; sourceTree = "<group>"; };
+		80F0C1711FDE669200211BA4 /* ShareViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		80F0C1721FDE669200211BA4 /* FollowViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FollowViewController.swift; sourceTree = "<group>"; };
+		80F0C1731FDE669200211BA4 /* SessionEntryViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SessionEntryViewController.xib; sourceTree = "<group>"; };
+		80F0C1751FDE669200211BA4 /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		80F0C1771FDE669200211BA4 /* URLSession+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "URLSession+Extensions.swift"; sourceTree = "<group>"; };
+		80F0C1781FDE669200211BA4 /* UIViewController+Alert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+Alert.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8043F2AB1FDD75D800F5E0FA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80BF78411FDDC4B600965AAE /* libz.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8043F2A51FDD75D800F5E0FA = {
+			isa = PBXGroup;
+			children = (
+				8043F2B01FDD75D800F5E0FA /* LocationTrackPhone */,
+				8043F2AF1FDD75D800F5E0FA /* Products */,
+				80BF783F1FDDC4B500965AAE /* Frameworks */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+		};
+		8043F2AF1FDD75D800F5E0FA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8043F2AE1FDD75D800F5E0FA /* LocationTrackPhone.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8043F2B01FDD75D800F5E0FA /* LocationTrackPhone */ = {
+			isa = PBXGroup;
+			children = (
+				80F0C1761FDE669200211BA4 /* Extensions */,
+				80F0C1741FDE669200211BA4 /* Models */,
+				80F0C1691FDE669200211BA4 /* Networking */,
+				80F0C16C1FDE669200211BA4 /* ViewControllers */,
+				8043F2B11FDD75D800F5E0FA /* AppDelegate.swift */,
+				184EB0082088028C00CB1087 /* Assets.xcassets */,
+				184EB00A2088029D00CB1087 /* LaunchScreen.storyboard */,
+				8043F2BD1FDD75D800F5E0FA /* Info.plist */,
+			);
+			path = LocationTrackPhone;
+			sourceTree = "<group>";
+		};
+		80BF783F1FDDC4B500965AAE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				80BF784C1FDDC89E00965AAE /* Security.framework */,
+				80BF784A1FDDC88500965AAE /* libz.1.2.11.tbd */,
+				80BF78401FDDC4B600965AAE /* libz.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		80F0C1691FDE669200211BA4 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				80F0C16A1FDE669200211BA4 /* WebSocket.swift */,
+				80F0C16B1FDE669200211BA4 /* WebServices.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		80F0C16C1FDE669200211BA4 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				80F0C1721FDE669200211BA4 /* FollowViewController.swift */,
+				80F0C1701FDE669200211BA4 /* FollowViewController.xib */,
+				80F0C16F1FDE669200211BA4 /* HomeViewController.swift */,
+				80D42228206B1F7D0001B21A /* HomeViewController.xib */,
+				80F0C16E1FDE669200211BA4 /* SessionEntryViewController.swift */,
+				80F0C1731FDE669200211BA4 /* SessionEntryViewController.xib */,
+				80F0C1711FDE669200211BA4 /* ShareViewController.swift */,
+				80F0C16D1FDE669200211BA4 /* ShareViewController.xib */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		80F0C1741FDE669200211BA4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				80F0C1751FDE669200211BA4 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		80F0C1761FDE669200211BA4 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				80F0C1771FDE669200211BA4 /* URLSession+Extensions.swift */,
+				80F0C1781FDE669200211BA4 /* UIViewController+Alert.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8043F2AD1FDD75D800F5E0FA /* LocationTrackPhone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8043F2C01FDD75D800F5E0FA /* Build configuration list for PBXNativeTarget "LocationTrackPhone" */;
+			buildPhases = (
+				8043F2AA1FDD75D800F5E0FA /* Sources */,
+				8043F2AB1FDD75D800F5E0FA /* Frameworks */,
+				8043F2AC1FDD75D800F5E0FA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LocationTrackPhone;
+			productName = LocationTrackPhone;
+			productReference = 8043F2AE1FDD75D800F5E0FA /* LocationTrackPhone.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8043F2A61FDD75D800F5E0FA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0910;
+				LastUpgradeCheck = 0930;
+				ORGANIZATIONNAME = "Ray Wenderlich";
+				TargetAttributes = {
+					8043F2AD1FDD75D800F5E0FA = {
+						CreatedOnToolsVersion = 9.1;
+						LastSwiftMigration = 1010;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 8043F2A91FDD75D800F5E0FA /* Build configuration list for PBXProject "LocationTrackPhone" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8043F2A51FDD75D800F5E0FA;
+			productRefGroup = 8043F2AF1FDD75D800F5E0FA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8043F2AD1FDD75D800F5E0FA /* LocationTrackPhone */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8043F2AC1FDD75D800F5E0FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80F0C1811FDE669200211BA4 /* SessionEntryViewController.xib in Resources */,
+				80F0C17E1FDE669200211BA4 /* FollowViewController.xib in Resources */,
+				80F0C17B1FDE669200211BA4 /* ShareViewController.xib in Resources */,
+				184EB00B2088029D00CB1087 /* LaunchScreen.storyboard in Resources */,
+				80D42229206B1F7D0001B21A /* HomeViewController.xib in Resources */,
+				184EB0092088028C00CB1087 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8043F2AA1FDD75D800F5E0FA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80F0C17F1FDE669200211BA4 /* ShareViewController.swift in Sources */,
+				80F0C17D1FDE669200211BA4 /* HomeViewController.swift in Sources */,
+				80F0C17C1FDE669200211BA4 /* SessionEntryViewController.swift in Sources */,
+				80F0C1821FDE669200211BA4 /* Models.swift in Sources */,
+				8043F2B21FDD75D800F5E0FA /* AppDelegate.swift in Sources */,
+				80F0C1841FDE669200211BA4 /* UIViewController+Alert.swift in Sources */,
+				80F0C1791FDE669200211BA4 /* WebSocket.swift in Sources */,
+				80F0C17A1FDE669200211BA4 /* WebServices.swift in Sources */,
+				80F0C1801FDE669200211BA4 /* FollowViewController.swift in Sources */,
+				80F0C1831FDE669200211BA4 /* URLSession+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8043F2BE1FDD75D800F5E0FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8043F2BF1FDD75D800F5E0FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8043F2C11FDD75D800F5E0FA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = LocationTrackPhone/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = vapor.codes.LocationTrackPhone;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8043F2C21FDD75D800F5E0FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = LocationTrackPhone/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = vapor.codes.LocationTrackPhone;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8043F2A91FDD75D800F5E0FA /* Build configuration list for PBXProject "LocationTrackPhone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8043F2BE1FDD75D800F5E0FA /* Debug */,
+				8043F2BF1FDD75D800F5E0FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8043F2C01FDD75D800F5E0FA /* Build configuration list for PBXNativeTarget "LocationTrackPhone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8043F2C11FDD75D800F5E0FA /* Debug */,
+				8043F2C21FDD75D800F5E0FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8043F2A61FDD75D800F5E0FA /* Project object */;
+}
