@@ -30,10 +30,14 @@ import Fluent
 import Vapor
 
 final class User: Model, Content {
+  var id: UUID??
+
+  typealias IDValue=UUID?
+
   static let schema = "users"
   
   @ID
-  var id: UUID?
+  var id: IDValue
   
   @Field(key: "name")
   var name: String
